@@ -1,26 +1,611 @@
 @import "tailwindcss";
 
+/* ================= design tokens =================
+   Sentinel "Obsidian Signal" — refined monochrome on pure black,
+   hairline borders, white actions, one signal colour (cyan) for
+   anything alive or protected. Layered like polished stone. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand: #0a0a0b; /* ink on white controls */
+  --brand-2: #6ab7ff; /* links / informational */
+  --accent: #38c6ee; /* the Signal — protected, live, AI */
+  --accent-soft: #a5e7ff;
+
+  --ink: #f5f5f7;
+  --muted: #8f8f99;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.17);
+  --bg: #000000;
+  --surface: #0c0c0e;
+  --surface-2: #151518;
+  --elev: #1d1d22;
+
+  --ok: #3ecf8e;
+  --ok-bg: rgba(62, 207, 142, 0.09);
+  --ok-line: rgba(62, 207, 142, 0.28);
+  --warn: #f5a524;
+  --warn-bg: rgba(245, 165, 36, 0.09);
+  --warn-line: rgba(245, 165, 36, 0.28);
+  --danger: #ff5c5c;
+  --danger-bg: rgba(255, 92, 92, 0.09);
+  --danger-line: rgba(255, 92, 92, 0.3);
+  --info-bg: rgba(106, 183, 255, 0.09);
+  --info-line: rgba(106, 183, 255, 0.28);
+  --accent-bg: rgba(56, 198, 238, 0.1);
+  --accent-line: rgba(56, 198, 238, 0.3);
+
+  --radius: 16px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  overscroll-behavior-y: none;
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, Arial, sans-serif;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:where(button, a, input, textarea, [role="button"]):focus-visible {
+  outline: 2px solid var(--line-strong);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+::selection {
+  background: rgba(56, 198, 238, 0.3);
+}
+
+/* ================= typography ================= */
+.display {
+  font-family: var(--font-display), system-ui, Arial, sans-serif;
+  letter-spacing: -0.02em;
+}
+.amount {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.02em;
+}
+.mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 4px 2px 8px;
+}
+
+/* ================= phone shell ================= */
+.shell {
+  max-width: 460px;
+  margin: 0 auto;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  background: var(--bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+@media (min-width: 520px) {
+  body {
+    /* lamp glow from above on black — the room the phone sits in */
+    background: radial-gradient(120% 70% at 50% -12%, rgba(255, 255, 255, 0.07), transparent 55%), #000;
+  }
+  .shell {
+    margin: 22px auto;
+    min-height: min(880px, calc(100dvh - 44px));
+    height: min(880px, calc(100dvh - 44px));
+    border-radius: 30px;
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.85), 0 0 100px rgba(255, 255, 255, 0.04);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+.scroll::-webkit-scrollbar {
+  width: 0;
+}
+
+/* ================= hero (obsidian, lamp glow, quiet constellation) ================= */
+.hero {
+  position: relative;
+  color: var(--ink);
+  background: radial-gradient(130% 90% at 50% -20%, rgba(255, 255, 255, 0.09), transparent 58%), #070708;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+.hero::before {
+  /* the herd-immunity mesh, whispered in silver */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg stroke='%23ffffff' stroke-opacity='.055' fill='none'%3E%3Cpath d='M30 80L150 40L260 90L390 60M150 40L120 200L20 260M260 90L300 220L390 260M120 200L300 220M20 260L180 340L300 220M180 340L390 260M120 200L30 80'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='.14'%3E%3Ccircle cx='30' cy='80' r='2.2'/%3E%3Ccircle cx='150' cy='40' r='2.6'/%3E%3Ccircle cx='260' cy='90' r='2.2'/%3E%3Ccircle cx='390' cy='60' r='1.8'/%3E%3Ccircle cx='120' cy='200' r='2.6'/%3E%3Ccircle cx='20' cy='260' r='1.8'/%3E%3Ccircle cx='300' cy='220' r='3'/%3E%3Ccircle cx='390' cy='260' r='2.2'/%3E%3Ccircle cx='180' cy='340' r='2.6'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 420px;
+  pointer-events: none;
+}
+.hero::after {
+  /* the Signal: a few nodes alive in cyan, breathing */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg fill='%2338c6ee'%3E%3Ccircle cx='150' cy='40' r='6' fill-opacity='.1'/%3E%3Ccircle cx='150' cy='40' r='2.2' fill-opacity='.8'/%3E%3Ccircle cx='120' cy='200' r='7' fill-opacity='.1'/%3E%3Ccircle cx='120' cy='200' r='2.4' fill-opacity='.8'/%3E%3Ccircle cx='300' cy='220' r='8' fill-opacity='.12'/%3E%3Ccircle cx='300' cy='220' r='2.6' fill-opacity='.9'/%3E%3Ccircle cx='180' cy='340' r='7' fill-opacity='.1'/%3E%3Ccircle cx='180' cy='340' r='2.4' fill-opacity='.8'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 420px;
+  animation: twinkle 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes twinkle {
+  from {
+    opacity: 0.25;
+  }
+  55% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+.hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line-strong);
+  color: var(--accent-soft);
+  flex-shrink: 0;
+}
+
+/* lock-screen sonar pulse behind the shield */
+.sonar-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sonar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(165, 231, 255, 0.4);
+  animation: sonar 2.8s ease-out infinite;
+  pointer-events: none;
+}
+.sonar-ring.r2 {
+  animation-delay: 1.4s;
+}
+@keyframes sonar {
+  from {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(2.05);
+    opacity: 0;
+  }
+}
+
+/* ================= 3D motion kit ================= */
+/* Entrances rise out of the page plane. */
+.fade-in {
+  animation: rise 0.45s var(--ease) both;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: perspective(900px) translateY(14px) rotateX(5deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Success marks flip into place. */
+.flip-in {
+  animation: flipin 0.65s cubic-bezier(0.2, 0.85, 0.3, 1.15) both;
+  transform-style: preserve-3d;
+}
+@keyframes flipin {
+  from {
+    opacity: 0;
+    transform: perspective(700px) rotateY(85deg) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The lock-screen mark drifts in space. */
+.float3d {
+  display: inline-flex;
+  animation: float3d 7s ease-in-out infinite;
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.55));
+}
+@keyframes float3d {
+  0%,
+  100% {
+    transform: perspective(700px) translateY(0) rotateY(-8deg) rotateX(2deg);
+  }
+  50% {
+    transform: perspective(700px) translateY(-7px) rotateY(8deg) rotateX(-3deg);
+  }
+}
+/* Pointer-tracked tilt (the balance card). */
+.tilt {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.18s var(--ease);
+  will-change: transform;
+}
+.tilt > .glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(240px 170px at var(--gx, 50%) var(--gy, 30%), rgba(255, 255, 255, 0.12), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.tilt.on > .glare {
+  opacity: 1;
+}
+
+/* ================= buttons ================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 14px 18px;
+  min-height: 48px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.08s var(--ease), filter 0.15s ease, background 0.15s ease, box-shadow 0.2s ease;
+  user-select: none;
+}
+.btn:active {
+  transform: scale(0.98) translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: #f5f5f7;
+  color: #0a0a0b;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55), 0 0 24px rgba(255, 255, 255, 0.06);
+}
+.btn-primary:not(:disabled):hover {
+  filter: brightness(1.06);
+}
+.btn-ghost {
+  background: var(--surface-2);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.btn-danger {
+  background: #e5484d;
+  color: #fff;
+}
+.btn-block {
+  width: 100%;
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+/* ================= cards ================= */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.card-soft {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+/* ================= inputs ================= */
+.input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px 14px;
+  font-size: 1rem;
+  background: var(--surface-2);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.18s ease;
+}
+.input::placeholder {
+  color: #63636d;
+}
+.input:focus {
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+  display: block;
+}
+
+/* ================= chips / badges ================= */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.chip-ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+  border-color: var(--ok-line);
+}
+.chip-warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-color: var(--warn-line);
+}
+.chip-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: var(--danger-line);
+}
+.chip-brand {
+  background: var(--info-bg);
+  color: var(--brand-2);
+  border-color: var(--info-line);
+}
+.chip-accent {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent-line);
+}
+.chip-muted {
+  background: var(--surface-2);
+  color: var(--muted);
+  border-color: var(--line);
+}
+
+/* ================= tab bar ================= */
+.tabbar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  border-top: 1px solid var(--line);
+  background: rgba(4, 4, 5, 0.92);
+  backdrop-filter: blur(10px);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 52px;
+  padding: 6px 0 5px;
+  border-radius: 12px;
+  color: #6e6e78;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  transition: color 0.15s ease;
+  position: relative;
+}
+.tab.on {
+  color: var(--ink);
+  font-weight: 600;
+}
+.tab.on::after {
+  /* the Signal marks where you are */
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(56, 198, 238, 0.8);
+}
+
+/* ================= bottom sheets ================= */
+.sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.66);
+  backdrop-filter: blur(3px);
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+}
+.sheet {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-bottom: none;
+  border-radius: 22px 22px 0 0;
+  padding: 12px 20px 26px;
+  max-height: 88%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: sheet-up 0.32s var(--ease) both;
+  transform-origin: bottom center;
+}
+@keyframes sheet-up {
+  from {
+    transform: perspective(900px) translateY(36px) rotateX(4deg);
+    opacity: 0.4;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.sheet-grab {
+  display: block;
+  width: 100%;
+  padding: 6px 0 10px;
+  background: transparent;
+  border: none;
+  cursor: grab;
+  touch-action: none;
+}
+.sheet-handle {
+  width: 42px;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.18);
+  margin: 0 auto;
+}
+
+/* ================= pin pad ================= */
+.pinpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+.pinkey {
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 1.625rem;
+  font-weight: 500;
+  font-family: var(--font-display), system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.07s ease, border-color 0.12s ease;
+}
+.pinkey:active {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--line-strong);
+  transform: scale(0.94) translateY(1px);
+}
+.pindot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.pindot.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(56, 198, 238, 0.7);
+}
+
+/* ================= skeletons ================= */
+.skel {
+  border-radius: 12px;
+  background: linear-gradient(90deg, #101013 25%, #1a1a1f 45%, #101013 65%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ================= misc ================= */
+.divider {
+  height: 1px;
+  background: var(--line);
+}
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 rgba(56, 198, 238, 0.6);
+  animation: pulse 1.8s infinite;
+}
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 198, 238, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(56, 198, 238, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 198, 238, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sonar-ring,
+  .pulse-dot,
+  .skel,
+  .fade-in,
+  .flip-in,
+  .float3d,
+  .sheet,
+  .hero::after {
+    animation: none;
+  }
+  .tilt {
+    transition: none;
+  }
 }
