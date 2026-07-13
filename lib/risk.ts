@@ -1,0 +1,81 @@
+import { getToggles } from "./store";
+import type { User } from "./types";
+
+export type RiskReason = { text: string; data: string };
+
+export type RiskResult = {
+  score: number; // 0..100
+  level: "allow" | "review" | "block";
+  reasons: RiskReason[];
+  headline: string;
+};
+
+function naira(n: number) {
+  return "₦" + n.toLocaleString("en-NG");
+}
+
+export function assessTransfer(user: User, amount: number, account: string, atHour: number): RiskResult {
+  const t = getToggles(user.id);
+  const reasons: RiskReason[] = [];
+  let score = 0;
+
+  // Spending-history signals.
+  const isKnown = user.baseline.knownPayees.includes(account);
+  if (t.spendingHistory) {
+    if (account && !isKnown) {
+      score += 35;
+      reasons.push({
+        text: "You've never sent money to this account before.",
+        data: "Your payment history",
+      });
+    }
+    const ratio = amount / user.baseline.typicalMax;
+    if (amount > user.baseline.typicalMax) {
+      score += 30;
+      reasons.push({
+        text: `That's about ${ratio.toFixed(1)} times your usual top amount of ${naira(user.baseline.typicalMax)}.`,
+        data: "Your spending pattern",
+      });
+      if (ratio >= 3) {
+        score += 20;
+        reasons.push({
+          text: "It's way more than you'd normally move in one go.",
+          data: "Your spending pattern",
+        });
+      }
+    }
+  }
+
+  // Device / context signals.
+  if (t.deviceSignals) {
+    const [start, end] = user.baseline.usualHours;
+    const odd = atHour < start || atHour >= end;
+    if (odd) {
+      score += 25;
+      const label = atHour === 0 ? "12am" : atHour < 12 ? `${atHour}am` : atHour === 12 ? "12pm" : `${atHour - 12}pm`;
+      reasons.push({
+        text: `It's ${label}, well outside the hours you usually bank.`,
+        data: "Device time & activity pattern",
+      });
+    }
+  }
+
+  score = Math.min(100, score);
+  const level = score >= 70 ? "block" : score >= 35 ? "review" : "allow";
+
+  const headline =
+    level === "allow"
+      ? "Looks like you. Sending it through"
+      : level === "review"
+        ? "One quick check before this goes out"
+        : "Something's off here, so we paused it";
+
+  if (level === "allow" && reasons.length === 0) {
+    reasons.push({
+      text: "This lines up with how you normally bank: someone you've paid, an ordinary amount, at a normal time.",
+      data: "Your behavioural profile",
+    });
+  }
+
+  return { score, level, reasons, headline };
+}
