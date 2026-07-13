@@ -457,6 +457,38 @@ body {
   box-shadow: 0 0 8px rgba(56, 198, 238, 0.8);
 }
 
+/* ================= floating Ask Sentinel button ================= */
+.fab {
+  position: absolute;
+  z-index: 30;
+  border-radius: 20px;
+  border: 1px solid var(--line-strong);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(160deg, #1b1b20, #0a0a0c);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(56, 198, 238, 0.22) inset;
+  touch-action: none;
+  user-select: none;
+}
+.fab.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+.fab:not(.dragging) {
+  transition: left 0.22s var(--ease), top 0.22s var(--ease), width 0.15s ease, height 0.15s ease, opacity 0.3s ease;
+}
+.fab .fab-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  border: 1px solid rgba(56, 198, 238, 0.5);
+  animation: sonar 2.6s ease-out infinite;
+  pointer-events: none;
+}
+
 /* ================= bottom sheets ================= */
 .sheet-scrim {
   position: absolute;
@@ -603,6 +635,9 @@ body {
   .float3d,
   .sheet,
   .hero::after {
+    animation: none;
+  }
+  .fab .fab-halo {
     animation: none;
   }
   .tilt {

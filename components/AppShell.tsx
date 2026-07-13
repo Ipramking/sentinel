@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { isUnlocked } from "@/lib/client";
+import { GuardFab } from "./GuardFab";
 import { Icon } from "./icons";
 import { PageSkeleton } from "./ui";
 
@@ -40,6 +41,7 @@ export function AppShell({
           <PageSkeleton />
         </div>
       )}
+      {ready && active !== "/scamguard" && <GuardFab />}
       <nav className="tabbar" aria-label="Main" style={{ gridTemplateColumns: `repeat(${NAV.length}, 1fr)` }}>
         {NAV.map((n) => {
           const on = n.href === active;
