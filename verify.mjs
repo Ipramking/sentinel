@@ -57,5 +57,20 @@ ok("override completes", o1.status === "completed" && o1.overridden === true);
 st = await get("/api/state?userId=ada");
 ok("balance reflects the sends", st.balance === 486350 - 15000 - 180000, `bal=${st.balance}`);
 
+// 8. report the past transaction -> herd immunity
+const past = st.transactions.find(t => t.account === "3388776655");
+ok("override txn in history", !!past);
+const rep = await post("/api/report", { userId: "ada", account: "3388776655", name: "Acct Verification Team", txnId: past.id });
+ok("report past txn", rep.ok && rep.ledgerCount === 1);
+st = await get("/api/state?userId=ada");
+ok("txn flagged reported", st.transactions.find(t => t.id === past.id)?.reported === true);
+ok("reportedAccounts includes scam acct", st.reportedAccounts.includes("3388776655"));
+const b2 = await post("/api/transfer", { userId: "bola", account: "3388776655", name: "Whoever", amount: 5000, hour: 14 });
+ok("herd immunity blocks bola", b2.status === "blocked" && b2.risk.score === 100 && !!b2.risk.ledgerHit, JSON.stringify(b2.risk));
+const led = await get("/api/ledger");
+ok("ledger endpoint lists the report", led.ledger.length === 1 && led.ledger[0].account === "3388776655" && led.protectedUsers >= 3);
+const repDupe = await post("/api/report", { userId: "bola", account: "3388776655", name: "Same account" });
+ok("duplicate report doesn't double-list", repDupe.ok && repDupe.ledgerCount === 1);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

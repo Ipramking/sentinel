@@ -6,6 +6,7 @@ export type Txn = {
   amount: number;
   ts: number;
   note?: string;
+  reported?: boolean; // user flagged this past transfer as a scam
 };
 
 export type Baseline = {
@@ -26,24 +27,44 @@ export type User = {
   baseline: Baseline;
 };
 
+/** One report protects everyone: accounts land here once and block network-wide. */
+export type ThreatEntry = {
+  account: string;
+  name?: string;
+  reason: string;
+  reportedBy: string;
+  ts: number;
+};
+
 export type Decision = {
   id: string;
   userId: string;
-  kind: "transfer" | "unlock";
+  kind: "transfer" | "unlock" | "report";
   title: string;
-  outcome: "allowed" | "review" | "blocked" | "override";
+  outcome: "allowed" | "review" | "blocked" | "override" | "alert";
   reason: string;
   dataUsed: string[];
+  ts: number;
+};
+
+export type Alert = {
+  id: string;
+  userId: string;
+  kind: "fraud-report";
+  message: string;
   ts: number;
 };
 
 export type DataToggles = {
   spendingHistory: boolean; // amount + known payee checks
   deviceSignals: boolean; // time / device checks
+  networkFeed: boolean; // herd-immunity threat ledger
 };
 
 export type DB = {
   users: Record<string, User>;
+  ledger: ThreatEntry[];
   decisions: Decision[];
+  alerts: Alert[];
   toggles: Record<string, DataToggles>;
 };

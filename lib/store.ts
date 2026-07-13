@@ -53,13 +53,15 @@ function bola(): User {
 }
 
 function defaultToggles(): DataToggles {
-  return { spendingHistory: true, deviceSignals: true };
+  return { spendingHistory: true, deviceSignals: true, networkFeed: true };
 }
 
 function seed(): DB {
   return {
     users: { ada: ada(), bola: bola() },
+    ledger: [],
     decisions: [],
+    alerts: [],
     toggles: { ada: defaultToggles(), bola: defaultToggles() },
   };
 }
@@ -72,11 +74,15 @@ declare global {
 
 export const db: DB = globalThis.__sentinelDB ?? (globalThis.__sentinelDB = seed());
 
-/** Replace the DB contents in place so every module's `db` reference stays valid. */
+/** Replace the DB contents in place so every module's `db` reference stays valid.
+    Older persisted snapshots may predate newer fields — default them here. */
 function adopt(data: DB) {
   db.users = data.users;
+  db.ledger = data.ledger ?? [];
   db.decisions = data.decisions;
+  db.alerts = data.alerts ?? [];
   db.toggles = data.toggles;
+  for (const t of Object.values(db.toggles)) t.networkFeed ??= true;
 }
 
 export function resetDB() {

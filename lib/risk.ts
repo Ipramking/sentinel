@@ -1,4 +1,4 @@
-import { getToggles } from "./store";
+import { db, getToggles } from "./store";
 import type { User } from "./types";
 
 export type RiskReason = { text: string; data: string };
@@ -7,6 +7,7 @@ export type RiskResult = {
   score: number; // 0..100
   level: "allow" | "review" | "block";
   reasons: RiskReason[];
+  ledgerHit?: { name?: string; reason: string; reportedBy: string };
   headline: string;
 };
 
@@ -18,6 +19,24 @@ export function assessTransfer(user: User, amount: number, account: string, atHo
   const t = getToggles(user.id);
   const reasons: RiskReason[] = [];
   let score = 0;
+
+  // Network threat feed (herd immunity) — highest priority.
+  if (t.networkFeed) {
+    const hit = db.ledger.find((e) => e.account === account);
+    if (hit) {
+      reasons.push({
+        text: `Someone else already reported this account for a scam. That's why we stopped it before you got burned.`,
+        data: "Sentinel network threat feed",
+      });
+      return {
+        score: 100,
+        level: "block",
+        reasons,
+        ledgerHit: { name: hit.name, reason: hit.reason, reportedBy: hit.reportedBy },
+        headline: "The network already flagged this one",
+      };
+    }
+  }
 
   // Spending-history signals.
   const isKnown = user.baseline.knownPayees.includes(account);

@@ -1,4 +1,4 @@
-import { getUser, hydrate } from "@/lib/store";
+import { db, getUser, hydrate } from "@/lib/store";
 import { maskPhone } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -19,5 +19,7 @@ export async function GET(req: Request) {
     },
     balance: user.balance,
     transactions: user.transactions.slice().sort((a, b) => b.ts - a.ts),
+    reportedAccounts: db.ledger.map((e) => e.account),
+    network: { reports: db.ledger.length, protectedUsers: Object.keys(db.users).length },
   });
 }

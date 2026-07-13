@@ -9,7 +9,7 @@ import { api, getUserId } from "@/lib/client";
 import { naira } from "@/lib/format";
 
 type Reason = { text: string; data: string };
-type Risk = { score: number; level: string; headline: string; reasons: Reason[] };
+type Risk = { score: number; level: string; headline: string; reasons: Reason[]; ledgerHit?: { name?: string; reason: string; reportedBy: string } };
 type Result = { status: string; frictionless?: boolean; steppedUp?: boolean; overridden?: boolean; error?: string; available?: number; risk: Risk };
 
 const SHORTCUTS = [
@@ -29,9 +29,14 @@ export default function Transfer() {
   const [result, setResult] = useState<Result | null>(null);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
+  const [reported, setReported] = useState(false);
+  const [netReports, setNetReports] = useState(0);
 
   useEffect(() => {
-    api.state(uid).then((s) => setBalance(s.balance)).catch(() => {});
+    api.state(uid).then((s) => {
+      setBalance(s.balance);
+      setNetReports(s.network.reports);
+    }).catch(() => {});
   }, [uid]);
 
   const amt = Number(amount) || 0;
@@ -77,9 +82,22 @@ export default function Transfer() {
     }
   }
 
+  async function fileReport() {
+    setBusy(true);
+    try {
+      await api.report(uid, account, name || "Reported scam account");
+      const s = await api.state(uid);
+      setNetReports(s.network.reports);
+      setReported(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function reset() {
     setPhase("form");
     setResult(null);
+    setReported(false);
     setName("");
     setAccount("");
     setAmount("");
@@ -145,7 +163,16 @@ export default function Transfer() {
         )}
 
         {phase === "blocked" && result && (
-          <Blocked result={result} busy={busy} onOverride={sendAnyway} onCancel={() => router.push("/dashboard")} />
+          <Blocked
+            result={result}
+            account={account}
+            reported={reported}
+            netReports={netReports}
+            busy={busy}
+            onReport={fileReport}
+            onOverride={sendAnyway}
+            onCancel={() => router.push("/dashboard")}
+          />
         )}
 
         {phase === "done" && result && (
@@ -207,7 +234,8 @@ function StepUp({ result, name, amount, busy, onConfirm, onCancel }: { result: R
   );
 }
 
-function Blocked({ result, busy, onOverride, onCancel }: { result: Result; busy: boolean; onOverride: () => void; onCancel: () => void }) {
+function Blocked({ result, account, reported, netReports, busy, onReport, onOverride, onCancel }: { result: Result; account: string; reported: boolean; netReports: number; busy: boolean; onReport: () => void; onOverride: () => void; onCancel: () => void }) {
+  const hit = result.risk.ledgerHit;
   const [showOverride, setShowOverride] = useState(false);
   const [ack, setAck] = useState(false);
   return (
@@ -222,6 +250,17 @@ function Blocked({ result, busy, onOverride, onCancel }: { result: Result; busy:
         </p>
         <ScoreBar score={result.risk.score} />
         <Reasons reasons={result.risk.reasons} />
+
+        {hit && (
+          <div className="mt-3.5" style={{ background: "var(--surface)", border: "1px solid var(--danger-line)", borderRadius: 12, padding: "10px 12px" }}>
+            <div className="flex items-center gap-2 font-bold text-[0.8125rem]" style={{ color: "var(--danger)" }}>
+              <Icon name="users" size={16} /> Blocked by the Sentinel network
+            </div>
+            <div className="text-[0.78125rem] mt-0.5" style={{ color: "var(--muted)" }}>
+              {hit.reportedBy} reported it. You&rsquo;re covered before this scam ever reached you.
+            </div>
+          </div>
+        )}
       </StatusCard>
 
       {/* what Sentinel already did */}
@@ -229,9 +268,21 @@ function Blocked({ result, busy, onOverride, onCancel }: { result: Result; busy:
         <div className="font-bold text-sm mb-2.5">What we did for you</div>
         <Action done icon="pause" text="Froze the transfer right away" />
         <Action done icon="clock" text="Started a 60-second breather" />
+        <Action done={reported} icon="doc" text={reported ? "Report filed, network covered" : "Write up and file a report"} />
+        {!hit && !reported && (
+          <button className="btn btn-danger btn-block mt-3" disabled={busy} onClick={onReport}>
+            {busy ? "Filing…" : "Report it and protect everyone"}
+          </button>
+        )}
+        {reported && (
+          <div className="text-[0.78125rem] font-semibold mt-2.5" style={{ color: "var(--ok)" }}>
+            ✓ {account} is on the list now. That&rsquo;s {netReports} scam account{netReports === 1 ? "" : "s"} nobody on Sentinel can pay.
+          </div>
+        )}
       </div>
 
       {/* user override — their money, their final call */}
+      {!reported && (
       <div className="card mt-3">
         {!showOverride ? (
           <button
@@ -250,7 +301,9 @@ function Blocked({ result, busy, onOverride, onCancel }: { result: Result; busy:
           <div className="fade-in">
             <div className="font-bold text-sm">Send anyway</div>
             <p className="text-[0.8125rem] mt-1.5" style={{ color: "var(--muted)" }}>
-              Everything here says this isn&rsquo;t your normal move. Once you send, the money&rsquo;s gone and you usually can&rsquo;t get it back.
+              {hit
+                ? "Somebody else already flagged this account. Once you send, the money's gone and you usually can't get it back."
+                : "Everything here says this isn't your normal move. Once you send, the money's gone and you usually can't get it back."}
             </p>
             <label className="flex items-start gap-2.5 mt-3 text-[0.8125rem]" style={{ cursor: "pointer" }}>
               <input
@@ -270,6 +323,7 @@ function Blocked({ result, busy, onOverride, onCancel }: { result: Result; busy:
           </div>
         )}
       </div>
+      )}
 
       <button className="btn btn-ghost btn-block mt-3" onClick={onCancel}>Close</button>
     </div>

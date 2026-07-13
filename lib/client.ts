@@ -60,5 +60,8 @@ export const api = {
     req("/api/transfer", { userId, account, name, amount, confirm: true }),
   overrideTransfer: (userId: string, account: string, name: string, amount: number) =>
     req("/api/transfer", { userId, account, name, amount, override: true }),
+  report: (userId: string, account: string, name: string, txnId?: string) =>
+    req("/api/report", { userId, account, name, txnId }),
+  ledger: () => req("/api/ledger"),
   reset: () => req("/api/reset", {}),
 };
