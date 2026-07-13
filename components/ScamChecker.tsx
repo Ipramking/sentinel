@@ -15,13 +15,14 @@ type Verdict = {
   confidence: number;
   redFlags: string[];
   advice: string;
-  source: "gemini" | "fallback";
+  source: "gemini" | "fallback" | "core";
 };
 
 const VERDICT_TONE: Record<Verdict["verdict"], Tone> = { scam: "danger", suspicious: "warn", safe: "ok" };
 
 const SOURCE_LABEL: Record<Verdict["source"], string> = {
   gemini: "Read by Gemini AI",
+  core: "Read by Sentinel Core, our own model",
   fallback: "Read on your device",
 };
 
@@ -165,7 +166,7 @@ export function ScamChecker({ compact = false }: { compact?: boolean }) {
             </div>
 
             <div className="mt-2.5">
-              <span className="chip chip-brand" style={{ fontSize: "0.6875rem" }}>
+              <span className={verdict.source === "core" ? "chip chip-accent" : "chip chip-brand"} style={{ fontSize: "0.6875rem" }}>
                 <Icon name={verdict.source === "gemini" ? "cloud" : "cpu"} size={12} /> {SOURCE_LABEL[verdict.source]}
               </span>
             </div>

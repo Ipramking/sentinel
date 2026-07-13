@@ -62,6 +62,8 @@ export const api = {
     req("/api/transfer", { userId, account, name, amount, override: true }),
   scamCheck: (payload: { userId: string; text?: string; imageBase64?: string; mimeType?: string }) =>
     req("/api/scam-check", payload),
+  engine: (userId: string) => req(`/api/engine?userId=${userId}`),
+  setAiEngine: (userId: string, aiEngine: string) => req("/api/engine", { userId, aiEngine }),
   report: (userId: string, account: string, name: string, txnId?: string, message?: string) =>
     req("/api/report", { userId, account, name, txnId, message }),
   ledger: () => req("/api/ledger"),

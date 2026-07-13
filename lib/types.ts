@@ -61,6 +61,8 @@ export type DataToggles = {
   networkFeed: boolean; // herd-immunity threat ledger
 };
 
+export type AiEngine = "auto" | "gemini" | "core";
+
 /** Sentinel Core — our own naive-Bayes scam classifier, trained on community reports. */
 export type CoreModel = {
   tokens: Record<string, { s: number; h: number }>; // per-token scam/ham doc counts
@@ -77,4 +79,5 @@ export type DB = {
   alerts: Alert[];
   toggles: Record<string, DataToggles>;
   model: CoreModel;
+  aiPrefs: Record<string, AiEngine>;
 };

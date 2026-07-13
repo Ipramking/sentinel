@@ -1,4 +1,4 @@
-import type { DB, DataToggles, Txn, User } from "./types";
+import type { AiEngine, DB, DataToggles, Txn, User } from "./types";
 import { seedModel } from "./sentinel-core";
 
 const HOUR = 3600_000;
@@ -65,6 +65,7 @@ function seed(): DB {
     alerts: [],
     toggles: { ada: defaultToggles(), bola: defaultToggles() },
     model: seedModel(),
+    aiPrefs: {},
   };
 }
 
@@ -85,6 +86,7 @@ function adopt(data: DB) {
   db.alerts = data.alerts ?? [];
   db.toggles = data.toggles;
   db.model = data.model ?? seedModel();
+  db.aiPrefs = data.aiPrefs ?? {};
   for (const t of Object.values(db.toggles)) t.networkFeed ??= true;
 }
 
@@ -156,6 +158,10 @@ export function findUserByPhone(phone: string): User | undefined {
 
 export function getToggles(id: string): DataToggles {
   return db.toggles[id] ?? defaultToggles();
+}
+
+export function getAiEngine(userId: string): AiEngine {
+  return db.aiPrefs[userId] ?? "auto";
 }
 
 export function uid(prefix = "id") {

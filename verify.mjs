@@ -79,5 +79,27 @@ const sc = await post("/api/scam-check", {
 });
 ok("scamguard flags an obvious scam", ["scam", "suspicious"].includes(sc.verdict?.verdict) && sc.verdict.redFlags.length > 0, JSON.stringify(sc.verdict));
 
+// 10. Sentinel Core + engine switcher
+const eng0 = await get("/api/engine?userId=ada");
+ok("engine defaults to auto with a pre-trained core", eng0.aiEngine === "auto" && eng0.core.examples >= 28, JSON.stringify(eng0));
+const engSet = await post("/api/engine", { userId: "ada", aiEngine: "core" });
+ok("switch to Sentinel Core", engSet.aiEngine === "core");
+const scCore = await post("/api/scam-check", {
+  userId: "ada",
+  text: "Dear customer your account has been BLOCKED due to failed BVN verification. Transfer the reactivation fee immediately and reply with your OTP to confirm.",
+});
+ok("core engine classifies the scam itself", scCore.engine === "core" && scCore.verdict.source === "core" && scCore.verdict.verdict === "scam", JSON.stringify(scCore));
+const repTeach = await post("/api/report", {
+  userId: "ada",
+  account: "0909090909",
+  name: "Reported scam account",
+  message: "You have won a federal grant of 750,000 pay the clearance token now with your BVN to claim it",
+});
+ok("report accepted", repTeach.ok === true);
+const eng1 = await get("/api/engine?userId=ada");
+ok("herd report taught the model", eng1.core.communityReports >= 1 && eng1.core.examples > eng0.core.examples, JSON.stringify(eng1.core));
+const engBack = await post("/api/engine", { userId: "ada", aiEngine: "auto" });
+ok("switch back to auto", engBack.aiEngine === "auto");
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
