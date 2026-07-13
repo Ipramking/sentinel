@@ -61,10 +61,20 @@ export type DataToggles = {
   networkFeed: boolean; // herd-immunity threat ledger
 };
 
+/** Sentinel Core — our own naive-Bayes scam classifier, trained on community reports. */
+export type CoreModel = {
+  tokens: Record<string, { s: number; h: number }>; // per-token scam/ham doc counts
+  docs: { s: number; h: number };
+  examples: number; // total messages learned from
+  communityReports: number; // herd reports that taught the model
+  updatedAt: number;
+};
+
 export type DB = {
   users: Record<string, User>;
   ledger: ThreatEntry[];
   decisions: Decision[];
   alerts: Alert[];
   toggles: Record<string, DataToggles>;
+  model: CoreModel;
 };

@@ -1,4 +1,5 @@
 import type { DB, DataToggles, Txn, User } from "./types";
+import { seedModel } from "./sentinel-core";
 
 const HOUR = 3600_000;
 const DAY = 24 * HOUR;
@@ -63,6 +64,7 @@ function seed(): DB {
     decisions: [],
     alerts: [],
     toggles: { ada: defaultToggles(), bola: defaultToggles() },
+    model: seedModel(),
   };
 }
 
@@ -82,6 +84,7 @@ function adopt(data: DB) {
   db.decisions = data.decisions;
   db.alerts = data.alerts ?? [];
   db.toggles = data.toggles;
+  db.model = data.model ?? seedModel();
   for (const t of Object.values(db.toggles)) t.networkFeed ??= true;
 }
 

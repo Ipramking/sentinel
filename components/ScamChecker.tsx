@@ -77,7 +77,8 @@ export function ScamChecker({ compact = false }: { compact?: boolean }) {
   async function report() {
     setBusy(true);
     try {
-      await api.report(uid, account, "Reported scam account");
+      // Pass the message too — every report teaches Sentinel Core.
+      await api.report(uid, account, "Reported scam account", undefined, text || undefined);
       const s = await api.state(uid);
       setNetReports(s.network.reports);
       setReported(true);
@@ -176,7 +177,7 @@ export function ScamChecker({ compact = false }: { compact?: boolean }) {
                 <>
                   <div className="font-bold text-sm">Shut it down for everyone</div>
                   <p className="text-[0.78125rem] mt-1 mb-2.5" style={{ color: "var(--muted)" }}>
-                    Drop in the account this message wanted you to pay. Everyone else on Sentinel gets covered right away.
+                    Drop in the account this message wanted you to pay. Everyone else on Sentinel gets covered right away, and it teaches our own AI too.
                   </p>
                   <label className="label">Account it wanted you to pay</label>
                   <input className="input mono" value={account} onChange={(e) => setAccount(e.target.value.replace(/\D/g, ""))} />

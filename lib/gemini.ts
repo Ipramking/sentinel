@@ -3,7 +3,7 @@ export type ScamVerdict = {
   confidence: number; // 0..100
   redFlags: string[];
   advice: string;
-  source: "gemini" | "fallback";
+  source: "gemini" | "fallback" | "core";
 };
 
 const MODEL = "gemini-2.5-flash";
@@ -26,7 +26,7 @@ const SCAM_WORDS = [
   "court", "refund", "customer care", "cbn", "account will be", "dear customer",
 ];
 
-/** Plain-language red flags used by the on-device rules fallback. */
+/** Plain-language red flags shared by the rules fallback and Sentinel Core. */
 export function heuristicFlags(text?: string): string[] {
   const t = (text ?? "").toLowerCase();
   const flags: string[] = [];

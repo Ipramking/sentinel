@@ -1,10 +1,11 @@
 import { db, getUser, hydrate, persist, uid } from "@/lib/store";
+import { train } from "@/lib/sentinel-core";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   await hydrate();
-  const { userId, account, name, txnId } = await req.json();
+  const { userId, account, name, txnId, message } = await req.json();
   const user = getUser(userId);
   const acct = String(account || "");
 
@@ -16,6 +17,13 @@ export async function POST(req: Request) {
       reportedBy: user?.name || "A Sentinel customer",
       ts: Date.now(),
     });
+  }
+
+  // Herd immunity teaches Sentinel Core: every report is a labelled scam example.
+  const lesson = [message, name].filter(Boolean).join(" ");
+  if (lesson.trim()) {
+    train(db.model, lesson, "scam");
+    db.model.communityReports += 1;
   }
 
   // Reporting a past transfer they already fell for — flag it in their history too.
