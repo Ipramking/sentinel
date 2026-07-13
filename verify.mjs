@@ -10,12 +10,14 @@ const get = (p) => fetch(B + p).then(r => r.json());
 await post("/api/reset", {});
 
 // 1. signup + phone sign-in
-const su = await post("/api/signup", { name: "Judge Test", phone: "08011122233", pin: "5555" });
+const su = await post("/api/signup", { name: "Judge Test", phone: "08011122233", pin: "5555", duressPin: "9555" });
 ok("signup", su.ok && su.userId && /^\d{10}$/.test(su.accountNumber), JSON.stringify(su));
-const dupe = await post("/api/signup", { name: "Judge Test", phone: "08011122233", pin: "5555" });
+const dupe = await post("/api/signup", { name: "Judge Test", phone: "08011122233", pin: "5555", duressPin: "9555" });
 ok("signup duplicate rejected", dupe.ok === false);
-const badPin = await post("/api/signup", { name: "X Y", phone: "08099999999", pin: "12" });
+const badPin = await post("/api/signup", { name: "X Y", phone: "08099999999", pin: "12", duressPin: "9555" });
 ok("signup bad pin rejected", badPin.ok === false);
+const pinClash = await post("/api/signup", { name: "Pin Clash", phone: "08077700011", pin: "1111", duressPin: "1111" });
+ok("signup rejects duress == normal pin", pinClash.ok === false);
 const si = await post("/api/unlock", { phone: "08011122233", pin: "5555" });
 ok("phone sign-in", si.ok && si.mode === "normal" && si.userId === su.userId);
 const wrong = await post("/api/unlock", { phone: "08011122233", pin: "0000" });
@@ -100,6 +102,26 @@ const eng1 = await get("/api/engine?userId=ada");
 ok("herd report taught the model", eng1.core.communityReports >= 1 && eng1.core.examples > eng0.core.examples, JSON.stringify(eng1.core));
 const engBack = await post("/api/engine", { userId: "ada", aiEngine: "auto" });
 ok("switch back to auto", engBack.aiEngine === "auto");
+
+// 11. duress: decoy account engine
+const du = await post("/api/unlock", { userId: "bola", pin: "9222" });
+ok("duress PIN unlocks in duress mode", du.ok && du.mode === "duress" && du.userId === "bola");
+let bst = await get("/api/state?userId=bola");
+ok("decoy balance shows (0-500)", bst.safeMode === true && bst.balance <= 500);
+ok("decoy history replaces the real one", bst.transactions.length === 5 && bst.transactions.some((t) => t.name === "Salary"), JSON.stringify(bst.transactions?.map((t) => t.name)));
+const cs = await post("/api/transfer", { userId: "bola", account: "0777666555", name: "Coerced Send", amount: 100, hour: 14, confirm: true });
+ok("coerced send completes against the decoy", cs.status === "completed");
+bst = await get("/api/state?userId=bola");
+ok("coerced send landed in decoy history only", bst.transactions.length === 6);
+const tu2 = await post("/api/topup", { userId: "bola" });
+ok("top-up refused while coerced", tu2.ok === false);
+const back = await post("/api/unlock", { userId: "bola", pin: "4321" });
+ok("normal PIN restores the real account", back.ok && back.mode === "normal");
+bst = await get("/api/state?userId=bola");
+ok("real balance untouched by the coerced session", bst.safeMode === false && bst.balance === 132900, `bal=${bst.balance}`);
+ok("coerced txns absent from real history", !bst.transactions.some((t) => t.name === "Coerced Send"));
+const relearn = await post("/api/transfer", { userId: "bola", account: "0777666555", name: "Coerced Send", amount: 100, hour: 14 });
+ok("coerced payee was never learned", relearn.status === "review");
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

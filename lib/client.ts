@@ -52,7 +52,8 @@ export const api = {
   state: (userId: string) => req(`/api/state?userId=${userId}`),
   unlock: (userId: string, pin: string) => req("/api/unlock", { userId, pin }),
   unlockByPhone: (phone: string, pin: string) => req("/api/unlock", { phone, pin }),
-  signup: (payload: { name: string; phone: string; pin: string }) => req("/api/signup", payload),
+  signup: (payload: { name: string; phone: string; pin: string; duressPin: string }) =>
+    req("/api/signup", payload),
   topup: (userId: string) => req("/api/topup", { userId }),
   transfer: (userId: string, account: string, name: string, amount: number, hour?: number) =>
     req("/api/transfer", { userId, account, name, amount, hour }),

@@ -11,16 +11,18 @@ export default function SignUp() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [pin, setPin] = useState("");
+  const [duressPin, setDuressPin] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const ready = name.trim().length >= 2 && phone.length === 11 && pin.length === 4;
+  const ready =
+    name.trim().length >= 2 && phone.length === 11 && pin.length === 4 && duressPin.length === 4;
 
   async function submit() {
     setBusy(true);
     setError("");
     try {
-      const r = await api.signup({ name, phone, pin });
+      const r = await api.signup({ name, phone, pin, duressPin });
       if (!r.ok) {
         setError(r.error || "Could not open the account. Check your details.");
         return;
@@ -77,17 +79,43 @@ export default function SignUp() {
             placeholder="080X XXX XXXX (11 digits)"
           />
 
-          <label className="label mt-3" style={{ color: "rgba(255,255,255,0.75)" }}>4-digit PIN</label>
-          <input
-            className="input mono text-center"
-            style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff" }}
-            inputMode="numeric"
-            maxLength={4}
-            type="password"
-            value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-            placeholder="••••"
-          />
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            <div>
+              <label className="label" style={{ color: "rgba(255,255,255,0.75)" }}>4-digit PIN</label>
+              <input
+                className="input mono text-center"
+                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff" }}
+                inputMode="numeric"
+                maxLength={4}
+                type="password"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                placeholder="••••"
+              />
+            </div>
+            <div>
+              <label className="label" style={{ color: "#ffcf9e" }}>Duress PIN</label>
+              <input
+                className="input mono text-center"
+                style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,203,158,0.45)", color: "#fff" }}
+                inputMode="numeric"
+                maxLength={4}
+                type="password"
+                value={duressPin}
+                onChange={(e) => setDuressPin(e.target.value.replace(/\D/g, ""))}
+                placeholder="••••"
+              />
+            </div>
+          </div>
+
+          <div
+            className="text-[0.78125rem] mt-3"
+            style={{ background: "rgba(255,203,158,0.12)", border: "1px solid rgba(255,203,158,0.3)", borderRadius: 12, padding: "10px 12px", color: "rgba(255,255,255,0.85)" }}
+          >
+            <b style={{ color: "#ffcf9e" }}>Your duress PIN is your panic button.</b> If anyone ever forces you to open
+            the app, type this one instead. They see a broke, ordinary-looking account,
+            your real money stays locked, and the bank gets a quiet heads-up.
+          </div>
         </div>
 
         <div className="text-center text-[0.8125rem] font-semibold mt-3" style={{ minHeight: 20, color: "#ffb4c4" }} role="alert">

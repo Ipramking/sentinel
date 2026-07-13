@@ -13,8 +13,9 @@ import { clockTime, maskAccount, naira, timeAgo } from "@/lib/format";
 type Txn = { id: string; dir: "in" | "out"; name: string; account?: string; amount: number; ts: number; note?: string; reported?: boolean };
 
 type State = {
-  user: { name: string; initials: string; phone: string; accountNumber: string };
+  user: { name: string; initials: string; phone: string; accountNumber: string; trustedContact: string };
   balance: number;
+  safeMode: boolean;
   transactions: Txn[];
   reportedAccounts: string[];
   network: { reports: number; protectedUsers: number };
@@ -104,6 +105,9 @@ export default function Dashboard() {
                 <span className="pulse-dot" /> Protected
               </span>
             </div>
+
+            {/* No safe-mode indicator anywhere — while coerced, the decoy must be
+                indistinguishable from a real account. */}
 
             {/* account card — a physical object: tilts with your finger */}
             <Tilt className="mt-4" style={{ background: "linear-gradient(150deg, rgba(255,255,255,0.09), rgba(255,255,255,0.045))", border: "1px solid rgba(255,255,255,0.16)", borderRadius: 18, padding: "14px 16px" }}>
@@ -266,6 +270,13 @@ export default function Dashboard() {
                 <button className="chip chip-brand" style={{ border: "none", cursor: "pointer" }} onClick={copyAccount}>
                   <Icon name="copy" size={12} /> Copy
                 </button>
+              </div>
+              <div className="divider my-2.5" />
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className="text-[0.6875rem]" style={{ color: "var(--muted)" }}>Trusted contact (duress alerts)</div>
+                  <div className="text-sm font-semibold">{s.user.trustedContact}</div>
+                </div>
               </div>
             </div>
             <button className="btn btn-ghost btn-block mt-4" style={{ color: "var(--danger)" }} onClick={() => { logout(); router.push("/"); }}>

@@ -13,7 +13,12 @@ function ada(): User {
     phone: "08031112214",
     accountNumber: "0011223344",
     balance: 486350,
+    decoyBalance: 340,
+    decoyTxns: [],
     pin: "1234",
+    duressPin: "9111",
+    trustedContact: "Chidi (brother)",
+    safeMode: false,
     baseline: {
       typicalMax: 60000,
       usualHours: [6, 23],
@@ -39,7 +44,12 @@ function bola(): User {
     phone: "08104550077",
     accountNumber: "0099887766",
     balance: 132900,
+    decoyBalance: 180,
+    decoyTxns: [],
     pin: "4321",
+    duressPin: "9222",
+    trustedContact: "Tunde (husband)",
+    safeMode: false,
     baseline: {
       typicalMax: 40000,
       usualHours: [6, 23],
@@ -176,7 +186,7 @@ function randomAccountNumber(): string {
   return acct;
 }
 
-export function createUser(input: { name: string; phone: string; pin: string }): User {
+export function createUser(input: { name: string; phone: string; pin: string; duressPin: string }): User {
   const now = Date.now();
   const name = input.name.trim();
   const initials = name
@@ -192,7 +202,12 @@ export function createUser(input: { name: string; phone: string; pin: string }):
     phone: input.phone.replace(/\D/g, ""),
     accountNumber: randomAccountNumber(),
     balance: 150000, // demo starting balance so judges can play immediately
+    decoyBalance: 250,
+    decoyTxns: [],
     pin: input.pin,
+    duressPin: input.duressPin,
+    trustedContact: "Bank fraud desk",
+    safeMode: false,
     baseline: { typicalMax: 40000, usualHours: [6, 23], knownPayees: [] },
     transactions: [
       { id: uid("t"), dir: "in", name: "Welcome to Sentinel", amount: 150000, ts: now, note: "Demo starting balance" },
@@ -203,8 +218,39 @@ export function createUser(input: { name: string; phone: string; pin: string }):
   return user;
 }
 
+/*
+ * Rebuilt on every duress unlock. The decoy stays the same for one coerced
+ * session but never looks identical twice. Balance lands somewhere between ₦0
+ * and ₦500, and the fake history gives a reason the account is nearly empty.
+ * The silent alarm has already fired by the time this screen is showing.
+ */
+export function activateSafeMode(user: User) {
+  const now = Date.now();
+  user.safeMode = true;
+  user.decoyBalance = Math.floor(Math.random() * 501); // ₦0–500
+  const drained = [
+    { name: "POS withdrawal, Ikeja", amount: 5000 + Math.floor(Math.random() * 40) * 100 },
+    { name: "NEPA prepaid token", amount: 2000 + Math.floor(Math.random() * 20) * 100 },
+    { name: "School fees transfer", amount: 8000 + Math.floor(Math.random() * 50) * 100 },
+  ];
+  const wage = drained.reduce((s, d) => s + d.amount, 0) + user.decoyBalance + 700;
+  user.decoyTxns = [
+    { id: uid("dt"), dir: "out", name: drained[0].name, amount: drained[0].amount, ts: now - 7 * HOUR },
+    { id: uid("dt"), dir: "out", name: drained[1].name, amount: drained[1].amount, ts: now - 26 * HOUR },
+    { id: uid("dt"), dir: "out", name: drained[2].name, amount: drained[2].amount, ts: now - 2.2 * DAY },
+    { id: uid("dt"), dir: "out", name: "MTN airtime", amount: 700, ts: now - 3 * DAY },
+    { id: uid("dt"), dir: "in", name: "Salary", amount: wage, ts: now - 5 * DAY },
+  ];
+}
+
+/** Fake transactions while coerced live only in the decoy history. */
 export function recordTxn(user: User, txn: Txn) {
-  if (txn.dir === "out") user.balance -= txn.amount;
-  else user.balance += txn.amount;
-  user.transactions.unshift(txn);
+  if (user.safeMode) {
+    user.decoyBalance = Math.max(0, user.decoyBalance - (txn.dir === "out" ? txn.amount : -txn.amount));
+    user.decoyTxns.unshift(txn);
+  } else {
+    if (txn.dir === "out") user.balance -= txn.amount;
+    else user.balance += txn.amount;
+    user.transactions.unshift(txn);
+  }
 }

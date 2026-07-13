@@ -22,7 +22,12 @@ export type User = {
   phone: string; // full digits; masked for display
   accountNumber: string;
   balance: number;
+  decoyBalance: number; // shown in duress "safe mode"; regenerated (₦0–500) on each duress unlock
+  decoyTxns: Txn[]; // consistent fake history while in safe mode
   pin: string;
+  duressPin: string;
+  trustedContact: string;
+  safeMode: boolean;
   transactions: Txn[];
   baseline: Baseline;
 };
@@ -41,7 +46,7 @@ export type Decision = {
   userId: string;
   kind: "transfer" | "scam" | "unlock" | "report";
   title: string;
-  outcome: "allowed" | "review" | "blocked" | "override" | "alert";
+  outcome: "allowed" | "review" | "blocked" | "override" | "safe" | "alert";
   reason: string;
   dataUsed: string[];
   ts: number;
@@ -50,7 +55,7 @@ export type Decision = {
 export type Alert = {
   id: string;
   userId: string;
-  kind: "fraud-report";
+  kind: "duress" | "fraud-report";
   message: string;
   ts: number;
 };

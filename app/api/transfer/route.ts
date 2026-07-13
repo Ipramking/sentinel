@@ -19,8 +19,10 @@ export async function POST(req: Request) {
   const dataUsed = Array.from(new Set(risk.reasons.map((r) => r.data)));
   const label = `${naira(amt)} to ${name || "recipient"}`;
 
-  if (amt > user.balance) {
-    return Response.json({ status: "failed", error: "insufficient", available: user.balance, risk });
+  // Works against the decoy balance while coerced, so the duress account behaves real.
+  const available = user.safeMode ? user.decoyBalance : user.balance;
+  if (amt > available) {
+    return Response.json({ status: "failed", error: "insufficient", available, risk });
   }
 
   const complete = () => {
@@ -33,7 +35,8 @@ export async function POST(req: Request) {
       ts: Date.now(),
     });
     // Sentinel learns: a send you completed makes this payee part of your normal pattern.
-    if (acct && !user.baseline.knownPayees.includes(acct)) {
+    // Never from a coerced session — those sends aren't "you".
+    if (!user.safeMode && acct && !user.baseline.knownPayees.includes(acct)) {
       user.baseline.knownPayees.push(acct);
     }
   };

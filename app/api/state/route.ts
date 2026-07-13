@@ -9,6 +9,14 @@ export async function GET(req: Request) {
   const user = getUser(userId);
   if (!user) return Response.json({ error: "unknown user" }, { status: 404 });
 
+  // While coerced, every number on screen comes from the decoy — the response
+  // shape stays identical so the app in front of the coercer looks ordinary.
+  const safe = user.safeMode;
+  const balance = safe ? user.decoyBalance : user.balance;
+  const transactions = safe
+    ? user.decoyTxns.slice().sort((a, b) => b.ts - a.ts)
+    : user.transactions.slice().sort((a, b) => b.ts - a.ts);
+
   return Response.json({
     user: {
       id: user.id,
@@ -16,9 +24,11 @@ export async function GET(req: Request) {
       initials: user.initials,
       phone: maskPhone(user.phone),
       accountNumber: user.accountNumber,
+      trustedContact: user.trustedContact,
     },
-    balance: user.balance,
-    transactions: user.transactions.slice().sort((a, b) => b.ts - a.ts),
+    balance,
+    safeMode: safe,
+    transactions,
     reportedAccounts: db.ledger.map((e) => e.account),
     network: { reports: db.ledger.length, protectedUsers: Object.keys(db.users).length },
   });

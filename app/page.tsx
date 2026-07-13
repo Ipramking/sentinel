@@ -6,9 +6,9 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { api, getUserId, setUnlocked, setUserId } from "@/lib/client";
 
-const DEMO_PROFILES: Record<string, { name: string; pin: string; tag: string }> = {
-  ada: { name: "Ada Okoro", pin: "1234", tag: "Demo · primary" },
-  bola: { name: "Bola Adeyemi", pin: "4321", tag: "Demo · 2nd device" },
+const DEMO_PROFILES: Record<string, { name: string; pin: string; duress: string; tag: string }> = {
+  ada: { name: "Ada Okoro", pin: "1234", duress: "9111", tag: "Demo · primary" },
+  bola: { name: "Bola Adeyemi", pin: "4321", duress: "9222", tag: "Demo · 2nd device" },
 };
 
 export default function SignIn() {
@@ -209,7 +209,7 @@ export default function SignIn() {
                 className="w-full text-xs mt-1"
                 style={{ minHeight: 40, color: "rgba(255,255,255,0.55)", background: "transparent", border: "none", cursor: "pointer" }}
               >
-                {showHint ? "Hide demo PIN" : "Show demo PIN"}
+                {showHint ? "Hide demo PINs" : "Show demo PINs"}
               </button>
               {showHint && (
                 <div
@@ -217,8 +217,12 @@ export default function SignIn() {
                   style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "12px 14px", color: "rgba(255,255,255,0.82)" }}
                 >
                   <div className="flex justify-between gap-3">
-                    <span>PIN for {p.name.split(" ")[0]}</span>
+                    <span>Normal PIN (your real account)</span>
                     <span className="mono font-bold">{p.pin}</span>
+                  </div>
+                  <div className="flex justify-between gap-3 mt-1.5" style={{ color: "#ffcf9e" }}>
+                    <span>Duress PIN (fake screen, silent alarm)</span>
+                    <span className="mono font-bold">{p.duress}</span>
                   </div>
                 </div>
               )}
