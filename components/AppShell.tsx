@@ -10,6 +10,7 @@ import { PageSkeleton } from "./ui";
 const NAV = [
   { href: "/dashboard", label: "Home", icon: "home" },
   { href: "/transfer", label: "Send", icon: "send" },
+  { href: "/scamguard", label: "ScamGuard", icon: "shield-check" },
 ];
 
 export function AppShell({

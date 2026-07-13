@@ -60,6 +60,8 @@ export const api = {
     req("/api/transfer", { userId, account, name, amount, confirm: true }),
   overrideTransfer: (userId: string, account: string, name: string, amount: number) =>
     req("/api/transfer", { userId, account, name, amount, override: true }),
+  scamCheck: (payload: { userId: string; text?: string; imageBase64?: string; mimeType?: string }) =>
+    req("/api/scam-check", payload),
   report: (userId: string, account: string, name: string, txnId?: string) =>
     req("/api/report", { userId, account, name, txnId }),
   ledger: () => req("/api/ledger"),

@@ -22,8 +22,8 @@ type State = {
 
 const ACTIONS = [
   { icon: "send", label: "Send", href: "/transfer" },
+  { icon: "shield-check", label: "ScamGuard", href: "/scamguard" },
   { icon: "phone", label: "Airtime" },
-  { icon: "wifi", label: "Data" },
   { icon: "receipt", label: "Bills" },
 ];
 

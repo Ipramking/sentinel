@@ -72,5 +72,12 @@ ok("ledger endpoint lists the report", led.ledger.length === 1 && led.ledger[0].
 const repDupe = await post("/api/report", { userId: "bola", account: "3388776655", name: "Same account" });
 ok("duplicate report doesn't double-list", repDupe.ok && repDupe.ledgerCount === 1);
 
+// 9. ScamGuard reads a message
+const sc = await post("/api/scam-check", {
+  userId: "ada",
+  text: "Dear customer your account has been BLOCKED due to failed BVN verification. Transfer the reactivation fee immediately and reply with your OTP to confirm.",
+});
+ok("scamguard flags an obvious scam", ["scam", "suspicious"].includes(sc.verdict?.verdict) && sc.verdict.redFlags.length > 0, JSON.stringify(sc.verdict));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

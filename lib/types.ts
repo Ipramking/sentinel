@@ -39,7 +39,7 @@ export type ThreatEntry = {
 export type Decision = {
   id: string;
   userId: string;
-  kind: "transfer" | "unlock" | "report";
+  kind: "transfer" | "scam" | "unlock" | "report";
   title: string;
   outcome: "allowed" | "review" | "blocked" | "override" | "alert";
   reason: string;
