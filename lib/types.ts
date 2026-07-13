@@ -28,6 +28,7 @@ export type User = {
   duressPin: string;
   trustedContact: string;
   safeMode: boolean;
+  duressView?: "decoy" | "network"; // how safe mode is disguised this session
   transactions: Txn[];
   baseline: Baseline;
 };

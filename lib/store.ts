@@ -222,11 +222,14 @@ export function createUser(input: { name: string; phone: string; pin: string; du
  * Rebuilt on every duress unlock. The decoy stays the same for one coerced
  * session but never looks identical twice. Balance lands somewhere between ₦0
  * and ₦500, and the fake history gives a reason the account is nearly empty.
- * The silent alarm has already fired by the time this screen is showing.
+ * We also flip a coin for how safe mode is disguised: a believable near-empty
+ * account, or an app that looks like it just can't connect. A thug who sees a
+ * dead app often gives up and walks. Either way the silent alarm has fired.
  */
 export function activateSafeMode(user: User) {
   const now = Date.now();
   user.safeMode = true;
+  user.duressView = Math.random() < 0.5 ? "decoy" : "network";
   user.decoyBalance = Math.floor(Math.random() * 501); // ₦0–500
   const drained = [
     { name: "POS withdrawal, Ikeja", amount: 5000 + Math.floor(Math.random() * 40) * 100 },

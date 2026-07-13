@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
+import { ConnectionDown } from "@/components/ConnectionDown";
 import { Icon } from "@/components/icons";
 import { Tilt } from "@/components/Tilt";
 import { IconTile, PageSkeleton, SectionLabel, Sheet, StatusCard } from "@/components/ui";
@@ -16,6 +17,7 @@ type State = {
   user: { name: string; initials: string; phone: string; accountNumber: string; trustedContact: string };
   balance: number;
   safeMode: boolean;
+  duressView?: "decoy" | "network";
   transactions: Txn[];
   reportedAccounts: string[];
   network: { reports: number; protectedUsers: number };
@@ -82,6 +84,10 @@ export default function Dashboard() {
       setBusy(false);
     }
   }
+
+  // Safe mode sometimes plays dead instead of showing a decoy. No shell, no tabs,
+  // nothing to poke at — just a bank app that looks like it lost its connection.
+  if (s?.safeMode && s.duressView === "network") return <ConnectionDown />;
 
   return (
     <AppShell active="/dashboard">

@@ -28,6 +28,7 @@ export async function GET(req: Request) {
     },
     balance,
     safeMode: safe,
+    duressView: safe ? user.duressView ?? "decoy" : undefined,
     transactions,
     reportedAccounts: db.ledger.map((e) => e.account),
     network: { reports: db.ledger.length, protectedUsers: Object.keys(db.users).length },

@@ -108,6 +108,7 @@ const du = await post("/api/unlock", { userId: "bola", pin: "9222" });
 ok("duress PIN unlocks in duress mode", du.ok && du.mode === "duress" && du.userId === "bola");
 let bst = await get("/api/state?userId=bola");
 ok("decoy balance shows (0-500)", bst.safeMode === true && bst.balance <= 500);
+ok("duress session picked a disguise", ["decoy", "network"].includes(bst.duressView), bst.duressView);
 ok("decoy history replaces the real one", bst.transactions.length === 5 && bst.transactions.some((t) => t.name === "Salary"), JSON.stringify(bst.transactions?.map((t) => t.name)));
 const cs = await post("/api/transfer", { userId: "bola", account: "0777666555", name: "Coerced Send", amount: 100, hour: 14, confirm: true });
 ok("coerced send completes against the decoy", cs.status === "completed");
