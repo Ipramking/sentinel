@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sentinel
 
-## Getting Started
+**Security that disappears when you're you.**
 
-First, run the development server:
+An AI fraud immune system for banking, built for HackX 2026 (Union Bank × ECX) by
+Inioluwa, Anuoluwa and Craig.
+
+The idea in one line: your bank app should know how you behave. When a transfer looks
+like you — someone you've paid before, a normal amount, a normal time — it goes straight
+through with no extra friction. When something is off, Sentinel steps in, explains itself
+in plain language, and acts. And every customer it protects makes the whole network
+safer, because one person's scam report blocks that account for everyone.
+
+## What we're building this week
+
+- **Adaptive, risk-based authentication** — behavioural scoring routes each transfer to
+  low-friction, step-up, or blocked. Never switches authentication off; it drops the
+  redundant extra code on transfers it can already see are normal, and forces a strong
+  step-up when risk rises.
+- **You stay in charge** — a blocked transfer can still be sent if you acknowledge the
+  risks. Your money, your final call, honestly logged.
+- **ScamGuard** — paste a scam message or screenshot and the AI flags the manipulation.
+- **Herd immunity** — one report blocks the scam account for every customer.
+- **Duress PIN** — a second PIN that shows a believable decoy account while your real
+  money locks and a silent alert goes out.
+- **Trust Center** — every decision explained, with data-source controls you own.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+More here as the build progresses.
