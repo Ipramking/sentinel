@@ -85,13 +85,56 @@ export function resetDB() {
 }
 
 /* ---- persistence seam ----
-   Every route reads through hydrate() and writes through persist(). In-memory is
-   fine locally (and is what makes the two-device demo work on one laptop); a real
-   database slots in behind these two calls without touching any route. */
+   Every route reads through hydrate() and writes through persist(). With a
+   MONGODB_URI set, the demo DB lives in MongoDB Atlas as one snapshot document:
+   each request re-reads it, each mutation writes it back, and a version stamp
+   keeps a lambda from regressing below its own last write. Without a URI both
+   calls are no-ops and the store is purely in-memory — which is exactly what
+   makes the two-device demo work on one laptop. */
 
-export async function hydrate() {}
+let localVersion = 0; // newest snapshot version this instance has seen or written
 
-export async function persist() {}
+type Snapshot = { _id: string; v: number; data: DB };
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __sentinelMongo: Promise<import("mongodb").MongoClient> | undefined;
+}
+
+async function snapshots() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) return null;
+  const { MongoClient } = await import("mongodb");
+  // one shared connection per runtime, reused across hot lambda invocations
+  globalThis.__sentinelMongo ??= MongoClient.connect(uri);
+  const client = await globalThis.__sentinelMongo;
+  return client.db("sentinel").collection<Snapshot>("state");
+}
+
+export async function hydrate() {
+  try {
+    const col = await snapshots();
+    if (!col) return;
+    const doc = await col.findOne({ _id: "db" });
+    if (!doc || doc.v <= localVersion) return;
+    adopt(doc.data);
+    localVersion = doc.v;
+  } catch {
+    // fall back to whatever this instance has in memory
+  }
+}
+
+export async function persist() {
+  try {
+    const col = await snapshots();
+    if (!col) return;
+    const v = Math.max(Date.now(), localVersion + 1);
+    await col.replaceOne({ _id: "db" }, { v, data: db }, { upsert: true });
+    localVersion = v;
+  } catch {
+    // a lost write only costs demo state, never a failed response
+  }
+}
 
 export function getUser(id: string): User | undefined {
   return db.users[id];
