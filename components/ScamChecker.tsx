@@ -30,10 +30,14 @@ const SOURCE_LABEL: Record<Verdict["source"], string> = {
 export function ScamChecker({ compact = false }: { compact?: boolean }) {
   const uid = typeof window !== "undefined" ? getUserId() : "ada";
   const fileRef = useRef<HTMLInputElement>(null);
+  const audioRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [imgB64, setImgB64] = useState("");
   const [imgMime, setImgMime] = useState("image/png");
   const [imgPreview, setImgPreview] = useState("");
+  const [audB64, setAudB64] = useState("");
+  const [audMime, setAudMime] = useState("audio/ogg");
+  const [audPreview, setAudPreview] = useState("");
   const [account, setAccount] = useState(SCAM_ACCOUNT);
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [busy, setBusy] = useState(false);
@@ -54,6 +58,25 @@ export function ScamChecker({ compact = false }: { compact?: boolean }) {
       const [meta, b64] = url.split(",");
       setImgMime(meta.match(/data:(.*?);/)?.[1] || "image/png");
       setImgB64(b64 || "");
+      // one attachment at a time keeps the request simple
+      setAudB64("");
+      setAudPreview("");
+    };
+    reader.readAsDataURL(f);
+  }
+
+  function onAudio(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = reader.result as string;
+      setAudPreview(url);
+      const [meta, b64] = url.split(",");
+      setAudMime(meta.match(/data:(.*?);/)?.[1] || "audio/ogg");
+      setAudB64(b64 || "");
+      setImgB64("");
+      setImgPreview("");
     };
     reader.readAsDataURL(f);
   }
@@ -67,7 +90,8 @@ export function ScamChecker({ compact = false }: { compact?: boolean }) {
         userId: uid,
         text: text || undefined,
         imageBase64: imgB64 || undefined,
-        mimeType: imgB64 ? imgMime : undefined,
+        audioBase64: audB64 || undefined,
+        mimeType: imgB64 ? imgMime : audB64 ? audMime : undefined,
       });
       setVerdict(r.verdict);
     } finally {
@@ -88,7 +112,7 @@ export function ScamChecker({ compact = false }: { compact?: boolean }) {
     }
   }
 
-  const hasInput = !!text.trim() || !!imgB64;
+  const hasInput = !!text.trim() || !!imgB64 || !!audB64;
   const tone = verdict ? VERDICT_TONE[verdict.verdict] : "info";
   const vColor = TONES[tone].fg;
 
@@ -107,11 +131,30 @@ export function ScamChecker({ compact = false }: { compact?: boolean }) {
           <button className="btn btn-ghost flex-1 text-[0.8125rem]" style={compact ? { minHeight: 42, padding: "8px 8px" } : undefined} onClick={() => fileRef.current?.click()}>
             <Icon name="image" size={17} /> Screenshot
           </button>
+          <button className="btn btn-ghost flex-1 text-[0.8125rem]" style={compact ? { minHeight: 42, padding: "8px 8px" } : undefined} onClick={() => audioRef.current?.click()}>
+            <Icon name="mic" size={16} /> Voice note
+          </button>
           <button className="btn btn-ghost flex-1 text-[0.8125rem]" style={compact ? { minHeight: 42, padding: "8px 8px" } : undefined} onClick={() => setText(SAMPLE)}>
             <Icon name="doc" size={16} /> Sample
           </button>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
+          <input ref={audioRef} type="file" accept="audio/*" hidden onChange={onAudio} />
         </div>
+
+        {audPreview && (
+          <div className="flex items-center gap-2 mt-2.5">
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+            <audio controls src={audPreview} style={{ flex: 1, height: 40 }} />
+            <button
+              className="icon-btn"
+              onClick={() => { setAudB64(""); setAudPreview(""); }}
+              style={{ background: "var(--surface-2)", border: "1px solid var(--line)", borderRadius: 99 }}
+              aria-label="Remove voice note"
+            >
+              <Icon name="x" size={16} />
+            </button>
+          </div>
+        )}
 
         {imgPreview && (
           <div className="relative mt-2.5">

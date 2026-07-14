@@ -40,7 +40,22 @@ export function heuristicFlags(text?: string): string[] {
   return flags;
 }
 
-function fallback(text?: string): ScamVerdict {
+function fallback(text?: string, hadAudio?: boolean): ScamVerdict {
+  // We can't listen to a voice note without the cloud model. Rather than shrug,
+  // default to suspicion — voice-note money requests are a favourite scam channel.
+  if (hadAudio && !text?.trim()) {
+    return {
+      verdict: "suspicious",
+      confidence: 60,
+      redFlags: [
+        "We couldn't listen to this voice note right now.",
+        "Voice notes asking for money are a favourite scam trick, so treat it as suspicious until you've spoken to the person yourself.",
+      ],
+      advice: "Call the person back on the number you already have for them before sending anything.",
+      source: "fallback",
+    };
+  }
+
   const t = (text ?? "").toLowerCase();
   const flags = heuristicFlags(text);
 
@@ -80,16 +95,18 @@ function parseJson(raw: string): Partial<ScamVerdict> | null {
 
 export async function analyzeMessage(
   text?: string,
-  image?: { data: string; mimeType: string }, // a screenshot of the suspicious message
+  media?: { data: string; mimeType: string }, // a screenshot image or a voice-note audio clip
 ): Promise<ScamVerdict> {
   const key = process.env.GEMINI_API_KEY;
-  if (!key) return fallback(text);
+  const isAudio = !!media?.mimeType?.startsWith("audio/");
+  if (!key) return fallback(text, isAudio);
 
   try {
     const parts: unknown[] = [{ text: SYSTEM }];
     if (text && text.trim()) parts.push({ text: `Message from customer:\n"""${text.trim()}"""` });
-    if (image?.data) parts.push({ inline_data: { mime_type: image.mimeType, data: image.data } });
-    if (!text && !image) return fallback(text);
+    if (isAudio) parts.push({ text: "The customer received this as a voice note. Listen to it and judge what it's asking for." });
+    if (media?.data) parts.push({ inline_data: { mime_type: media.mimeType, data: media.data } });
+    if (!text && !media) return fallback(text);
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`,
@@ -108,11 +125,11 @@ export async function analyzeMessage(
         signal: AbortSignal.timeout(15000),
       },
     );
-    if (!res.ok) return fallback(text);
+    if (!res.ok) return fallback(text, isAudio);
     const json = await res.json();
     const raw: string | undefined = json?.candidates?.[0]?.content?.parts?.[0]?.text;
     const parsed = raw ? parseJson(raw) : null;
-    if (!parsed || !parsed.verdict) return fallback(text);
+    if (!parsed || !parsed.verdict) return fallback(text, isAudio);
 
     return {
       verdict: parsed.verdict,
@@ -125,6 +142,6 @@ export async function analyzeMessage(
       source: "gemini",
     };
   } catch {
-    return fallback(text);
+    return fallback(text, isAudio);
   }
 }

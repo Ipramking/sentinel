@@ -6,18 +6,22 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   await hydrate();
-  const { userId, text, imageBase64, mimeType } = await req.json();
+  const { userId, text, imageBase64, audioBase64, mimeType } = await req.json();
   const user = getUser(userId);
   const engine = getAiEngine(userId);
 
-  const image = imageBase64 ? { data: imageBase64, mimeType: mimeType || "image/png" } : undefined;
+  const media = imageBase64
+    ? { data: imageBase64, mimeType: mimeType || "image/png" }
+    : audioBase64
+      ? { data: audioBase64, mimeType: mimeType || "audio/ogg" }
+      : undefined;
 
-  // Sentinel Core is text-only; screenshots go to the multimodal cloud model.
+  // Sentinel Core is text-only; screenshots and voice notes go to the multimodal cloud model.
   let verdict: ScamVerdict;
-  if (engine === "core" && text && !image) {
+  if (engine === "core" && text && !media) {
     verdict = coreVerdict(db.model, text);
   } else {
-    verdict = await analyzeMessage(text, image);
+    verdict = await analyzeMessage(text, media);
   }
 
   // Distillation: confident cloud verdicts become training examples for our own model,
@@ -37,6 +41,7 @@ export async function POST(req: Request) {
       dataUsed: [
         text ? "Message text" : "",
         imageBase64 ? "Screenshot image (AI vision)" : "",
+        audioBase64 ? "Voice note (AI listened)" : "",
         verdict.source === "gemini" ? "Gemini AI" : verdict.source === "core" ? "Sentinel Core (our model)" : "On-device rules",
       ].filter(Boolean),
       ts: Date.now(),
