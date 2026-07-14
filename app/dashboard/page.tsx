@@ -20,6 +20,7 @@ type State = {
   safeMode: boolean;
   duressView?: "decoy" | "network";
   transactions: Txn[];
+  insight: { weekOut: number; typicalWeek: number; ratio: number };
   guardianOpenAlerts: number;
   reportedAccounts: string[];
   network: { reports: number; protectedUsers: number };
@@ -180,6 +181,23 @@ export default function Dashboard() {
               </StatusCard>
             </div>
           )}
+
+          {/* spending pace */}
+          <div className="px-4 pt-3">
+            <StatusCard tone={s.insight.ratio > 2 ? "warn" : "ok"} className="flex items-center gap-3">
+              <IconTile name="trend" tone={s.insight.ratio > 2 ? "warn" : "ok"} size={42} />
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm">
+                  {naira(s.insight.weekOut)} out this week
+                </div>
+                <div className="text-[0.78125rem]" style={{ color: "var(--muted)" }}>
+                  {s.insight.ratio > 2
+                    ? `That's about ${s.insight.ratio.toFixed(1)}× your usual pace. If someone's pressuring you to send money, slow down.`
+                    : `Right around your normal pace of ${naira(s.insight.typicalWeek)} a week.`}
+                </div>
+              </div>
+            </StatusCard>
+          </div>
 
           {/* network protection */}
           <div className="px-4 pt-3">

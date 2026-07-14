@@ -15,6 +15,7 @@ export type Baseline = {
   usualHours: [number, number]; // [startHour, endHourExclusive], 24h
   knownPayees: string[]; // account numbers they've safely paid before
   cadence?: { mean: number; samples: number }; // avg ms between PIN taps — learned, never gating
+  typicalWeekOut: number; // what a normal week of outgoing money looks like
 };
 
 export type User = {

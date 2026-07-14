@@ -25,6 +25,7 @@ function ada(): User {
       usualHours: [6, 23],
       knownPayees: ["0221145678", "1029384756", "5544332211"],
       cadence: { mean: 340, samples: 6 }, // Ada's learned PIN tap rhythm
+      typicalWeekOut: 95000,
     },
     transactions: [
       { id: "t1", dir: "in", name: "Salary — Kola & Co", amount: 420000, ts: now - 2 * DAY, note: "March salary" },
@@ -57,6 +58,7 @@ function bola(): User {
       usualHours: [6, 23],
       knownPayees: ["7788990011", "1234509876"],
       cadence: { mean: 380, samples: 6 },
+      typicalWeekOut: 30000,
     },
     transactions: [
       { id: "b1", dir: "in", name: "Ada Okoro", account: "0011223344", amount: 12000, ts: now - 1.1 * DAY, note: "Contribution" },
@@ -119,6 +121,7 @@ function adopt(data: DB) {
   db.aiPrefs = data.aiPrefs ?? {};
   db.guardianAlerts = data.guardianAlerts ?? [];
   for (const t of Object.values(db.toggles)) t.networkFeed ??= true;
+  for (const u of Object.values(db.users)) u.baseline.typicalWeekOut ??= 40000;
   ensureRefs(db);
 }
 
@@ -230,7 +233,7 @@ export function createUser(input: { name: string; phone: string; pin: string; du
     duressPin: input.duressPin,
     trustedContact: "Bank fraud desk",
     safeMode: false,
-    baseline: { typicalMax: 40000, usualHours: [6, 23], knownPayees: [] },
+    baseline: { typicalMax: 40000, usualHours: [6, 23], knownPayees: [], typicalWeekOut: 40000 },
     transactions: [
       { id: uid("t"), dir: "in", name: "Welcome to Sentinel", amount: 150000, ts: now, note: "Demo starting balance", ref: txnRef() },
     ],

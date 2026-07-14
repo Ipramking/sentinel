@@ -1,5 +1,6 @@
 import { db, getUser, hydrate } from "@/lib/store";
 import { maskPhone } from "@/lib/format";
+import { weeklyOut } from "@/lib/risk";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,18 @@ export async function GET(req: Request) {
   const transactions = safe
     ? user.decoyTxns.slice().sort((a, b) => b.ts - a.ts)
     : user.transactions.slice().sort((a, b) => b.ts - a.ts);
+
+  // Spending pace: this week's outflow vs a normal week. While coerced, use the
+  // decoy history so nothing on screen looks out of place.
+  const cutoff = Date.now() - 7 * 24 * 3600_000;
+  const weekOut = safe
+    ? user.decoyTxns.filter((t) => t.dir === "out" && t.ts >= cutoff).reduce((s, t) => s + t.amount, 0)
+    : weeklyOut(user);
+  const insight = {
+    weekOut,
+    typicalWeek: user.baseline.typicalWeekOut,
+    ratio: weekOut / Math.max(1, user.baseline.typicalWeekOut),
+  };
 
   const guardianOpenAlerts = db.guardianAlerts.filter(
     (a) => a.guardianId === userId && (a.status === "open" || a.status === "held"),
@@ -34,6 +47,7 @@ export async function GET(req: Request) {
     safeMode: safe,
     duressView: safe ? user.duressView ?? "decoy" : undefined,
     transactions,
+    insight,
     guardianOpenAlerts,
     reportedAccounts: db.ledger.map((e) => e.account),
     network: { reports: db.ledger.length, protectedUsers: Object.keys(db.users).length },

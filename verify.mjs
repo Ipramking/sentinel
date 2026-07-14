@@ -172,5 +172,10 @@ ok("anyone can add a guardian by phone", setG.ok && setG.guardian.name === "Ada 
 const remG = await post("/api/guardian", { userId: judge, action: "remove" });
 ok("guardian can be removed", remG.ok === true);
 
+// 15. weekly spending pace
+const ast = await get("/api/state?userId=ada");
+ok("state carries the weekly pace insight", ast.insight && ast.insight.typicalWeek === 95000 && ast.insight.weekOut > 0, JSON.stringify(ast.insight));
+ok("pace ratio adds up", Math.abs(ast.insight.ratio - ast.insight.weekOut / 95000) < 0.01);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

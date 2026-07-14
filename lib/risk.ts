@@ -15,6 +15,12 @@ function naira(n: number) {
   return "₦" + n.toLocaleString("en-NG");
 }
 
+/** Money that left this account in the last 7 days. */
+export function weeklyOut(user: User): number {
+  const cutoff = Date.now() - 7 * 24 * 3600_000;
+  return user.transactions.filter((t) => t.dir === "out" && t.ts >= cutoff).reduce((s, t) => s + t.amount, 0);
+}
+
 export function assessTransfer(user: User, amount: number, account: string, atHour: number): RiskResult {
   const t = getToggles(user.id);
   const reasons: RiskReason[] = [];
@@ -62,6 +68,17 @@ export function assessTransfer(user: User, amount: number, account: string, atHo
           data: "Your spending pattern",
         });
       }
+    }
+
+    // Weekly pace: a week that's already way past normal is how drain-the-account
+    // scams look. A small nudge, never a block on its own.
+    const pace = weeklyOut(user) / Math.max(1, user.baseline.typicalWeekOut);
+    if (pace > 2) {
+      score += 10;
+      reasons.push({
+        text: `You've already sent about ${pace.toFixed(1)} times your usual weekly amount this week.`,
+        data: "Your spending pattern",
+      });
     }
   }
 
