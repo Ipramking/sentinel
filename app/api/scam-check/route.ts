@@ -1,12 +1,24 @@
 import { db, getAiEngine, getUser, hydrate, persist, uid } from "@/lib/store";
 import { analyzeMessage, type ScamVerdict } from "@/lib/gemini";
 import { coreVerdict, train } from "@/lib/sentinel-core";
+import { str } from "@/lib/guard";
 
 export const dynamic = "force-dynamic";
 
+// Base64 media is forwarded to Gemini, never stored — but cap it so an oversized
+// body can't OOM the function.
+const MAX_MEDIA = 8_000_000; // ~6MB decoded
+
 export async function POST(req: Request) {
   await hydrate();
-  const { userId, text, imageBase64, audioBase64, mimeType } = await req.json();
+  const body = await req.json();
+  const { userId, mimeType } = body;
+  const text = str(body.text, 10_000);
+  const imageBase64 = str(body.imageBase64, MAX_MEDIA);
+  const audioBase64 = str(body.audioBase64, MAX_MEDIA);
+  if (String(body.imageBase64 ?? "").length > MAX_MEDIA || String(body.audioBase64 ?? "").length > MAX_MEDIA) {
+    return Response.json({ error: "media too large" }, { status: 413 });
+  }
   const user = getUser(userId);
   const engine = getAiEngine(userId);
 

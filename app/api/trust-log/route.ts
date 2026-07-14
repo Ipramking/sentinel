@@ -30,12 +30,19 @@ export async function GET(req: Request) {
   });
 }
 
+const TOGGLE_KEYS = ["spendingHistory", "deviceSignals", "networkFeed"] as const;
+
 export async function POST(req: Request) {
   await hydrate();
   const { userId, key, value } = await req.json();
-
+  // Real account only, and only the known toggle keys — no arbitrary map writes,
+  // and nothing like "constructor" slipping through an `in` check.
+  if (!getUser(userId)) return Response.json({ error: "unknown user" }, { status: 404 });
+  if (!(TOGGLE_KEYS as readonly string[]).includes(key)) {
+    return Response.json({ error: "unknown toggle" }, { status: 400 });
+  }
   const t = getToggles(userId);
-  if (key in t) (t as unknown as Record<string, boolean>)[key] = !!value;
+  (t as unknown as Record<string, boolean>)[key] = !!value;
   db.toggles[userId] = t as DataToggles;
   await persist();
   return Response.json({ toggles: t });

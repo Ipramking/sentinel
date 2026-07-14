@@ -1,4 +1,5 @@
 import { createUser, findUserByPhone, hydrate, persist } from "@/lib/store";
+import { digits, str } from "@/lib/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -6,10 +7,10 @@ export async function POST(req: Request) {
   await hydrate();
   const { name, phone, pin, duressPin } = await req.json();
 
-  const cleanName = String(name || "").trim();
-  const cleanPhone = String(phone || "").replace(/\D/g, "");
-  const cleanPin = String(pin || "");
-  const cleanDuress = String(duressPin || "");
+  const cleanName = str(name, 60).trim();
+  const cleanPhone = digits(phone, 11);
+  const cleanPin = str(pin, 4);
+  const cleanDuress = str(duressPin, 4);
 
   if (cleanName.length < 2) return Response.json({ ok: false, error: "Enter your full name." });
   if (cleanPhone.length !== 11) return Response.json({ ok: false, error: "Phone number must be 11 digits." });

@@ -231,5 +231,21 @@ await post("/api/report", { userId: "ada", account: scam.accountNumber, name: "S
 const blockScam = await post("/api/transfer", { userId: "bola", account: scam.accountNumber, name: "Whoever", amount: 500, hour: 14 });
 ok("reported vendor frozen out for everyone", blockScam.status === "blocked" && blockScam.risk.score === 100, JSON.stringify(blockScam.risk));
 
+// 18. hardening
+const huge = await post("/api/transfer", { userId: "ada", account: "0455667788", name: "X", amount: 5_000_000_000, hour: 14 });
+ok("absurd amount rejected", huge.status === "failed" && huge.error === "amount");
+const bigName = await post("/api/signup", { name: "N".repeat(500), phone: "08123400001", pin: "1212", duressPin: "2121" });
+const bigState = await get(`/api/state?userId=${bigName.userId}`);
+ok("oversized name is clamped, not stored whole", bigState.user.name.length <= 60, `len=${bigState.user.name.length}`);
+const badToggle = await post("/api/trust-log", { userId: "ada", key: "constructor", value: true });
+ok("unknown toggle key rejected", badToggle.error === "unknown toggle");
+const ghostEngine = await post("/api/engine", { userId: "nobody-x", aiEngine: "core" });
+ok("engine pref rejected for unknown user", ghostEngine.error === "unknown user");
+// PIN brute-force lockout on a throwaway account
+const bf = await post("/api/signup", { name: "Brute Target", phone: "08123400002", pin: "3434", duressPin: "4343" });
+for (let i = 0; i < 5; i++) await post("/api/unlock", { userId: bf.userId, pin: "0000" });
+const locked = await post("/api/unlock", { userId: bf.userId, pin: "3434" });
+ok("account locks after repeated wrong PINs", locked.ok === false && locked.mode === "locked", JSON.stringify(locked));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

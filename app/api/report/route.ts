@@ -1,13 +1,17 @@
 import { db, getUser, hydrate, persist, uid } from "@/lib/store";
 import { train } from "@/lib/sentinel-core";
+import { digits, str } from "@/lib/guard";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   await hydrate();
-  const { userId, account, name, txnId, message } = await req.json();
+  const body = await req.json();
+  const { userId, txnId } = body;
   const user = getUser(userId);
-  const acct = String(account || "");
+  const acct = digits(body.account, 20);
+  const name = str(body.name, 80);
+  const message = str(body.message, 2000);
 
   if (acct && !db.ledger.find((e) => e.account === acct)) {
     db.ledger.unshift({

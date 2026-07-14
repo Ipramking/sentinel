@@ -1,4 +1,4 @@
-import { db, getAiEngine, hydrate, persist } from "@/lib/store";
+import { db, getAiEngine, getUser, hydrate, persist } from "@/lib/store";
 import type { AiEngine } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +15,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   await hydrate();
   const { userId, aiEngine } = await req.json();
+  // Only set prefs for a real account, so arbitrary strings can't bloat the map.
+  if (!getUser(userId)) return Response.json({ error: "unknown user" }, { status: 404 });
   const engine = String(aiEngine) as AiEngine;
   if (["auto", "gemini", "core"].includes(engine)) db.aiPrefs[userId] = engine;
   await persist();

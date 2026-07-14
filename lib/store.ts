@@ -170,7 +170,24 @@ export async function hydrate() {
   }
 }
 
+/* The whole DB is one Mongo document with a hard 16MB ceiling. Every route only
+   ever unshifts onto these logs, so without a cap a long session (or a scripted
+   flood) eventually blows the limit and silently kills persistence. Keep the
+   newest entries — arrays are newest-first — and drop the tail. */
+const CAP = { decisions: 500, alerts: 200, guardianAlerts: 300, ledger: 2000, txns: 300 };
+function capArrays() {
+  if (db.decisions.length > CAP.decisions) db.decisions.length = CAP.decisions;
+  if (db.alerts.length > CAP.alerts) db.alerts.length = CAP.alerts;
+  if (db.guardianAlerts.length > CAP.guardianAlerts) db.guardianAlerts.length = CAP.guardianAlerts;
+  if (db.ledger.length > CAP.ledger) db.ledger.length = CAP.ledger;
+  for (const u of Object.values(db.users)) {
+    if (u.transactions.length > CAP.txns) u.transactions.length = CAP.txns;
+    if (u.decoyTxns.length > CAP.txns) u.decoyTxns.length = CAP.txns;
+  }
+}
+
 export async function persist() {
+  capArrays();
   try {
     const col = await snapshots();
     if (!col) return;

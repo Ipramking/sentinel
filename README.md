@@ -33,3 +33,4 @@ npm run dev        # http://localhost:3000
 ```
 
 Demo PINs, every endpoint, and `curl` examples: [docs/API.md](docs/API.md).
+Security posture and trade-offs: [docs/SECURITY.md](docs/SECURITY.md).

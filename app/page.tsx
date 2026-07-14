@@ -58,7 +58,13 @@ export default function SignIn() {
         router.push("/dashboard");
         return;
       }
-      setError(r.mode === "no-account" ? "No account found for that phone number." : "Incorrect PIN. Try again.");
+      setError(
+        r.mode === "no-account"
+          ? "No account found for that phone number."
+          : r.mode === "locked"
+            ? `Too many tries. Wait ${r.retryInSeconds ?? 60}s and try again.`
+            : "Incorrect PIN. Try again.",
+      );
       setPin("");
     } catch {
       setError("Something went wrong. Try again.");

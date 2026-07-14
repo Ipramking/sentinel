@@ -1,4 +1,5 @@
 import { activateSafeMode, db, findUserByPhone, getUser, hydrate, persist, uid } from "@/lib/store";
+import { pinFail, pinLockRemaining, pinOk } from "@/lib/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,15 @@ export async function POST(req: Request) {
   const user = userId ? getUser(userId) : findUserByPhone(phone);
   if (!user) return Response.json({ ok: false, mode: "no-account" });
 
+  // Stop a trivial 4-digit brute-force: after a few wrong PINs the account is
+  // locked for a short window. A correct PIN clears the counter.
+  const lockMs = pinLockRemaining(user.id);
+  if (lockMs > 0) {
+    return Response.json({ ok: false, mode: "locked", retryInSeconds: Math.ceil(lockMs / 1000) });
+  }
+
   if (pin === user.pin) {
+    pinOk(user.id);
     user.safeMode = false;
 
     /* Behavioural rhythm — the average gap between PIN-pad taps, measured on the
@@ -54,6 +63,7 @@ export async function POST(req: Request) {
   }
 
   if (pin === user.duressPin) {
+    pinOk(user.id); // a correct duress PIN is still a correct PIN — never lock it out
     activateSafeMode(user);
     const msg = `Someone entered the duress PIN on ${user.name}'s account. We hid the real balance, locked the money, and quietly pinged the bank's fraud desk and ${user.trustedContact}.`;
     db.alerts.unshift({ id: uid("a"), userId: user.id, kind: "duress", message: msg, ts: Date.now() });
@@ -73,5 +83,6 @@ export async function POST(req: Request) {
     return Response.json({ ok: true, mode: "duress", userId: user.id });
   }
 
+  pinFail(user.id);
   return Response.json({ ok: false, mode: "wrong" });
 }

@@ -1,22 +1,25 @@
 import { db, findUserByAccount, getUser, hydrate, persist, recordTxn, uid } from "@/lib/store";
 import { assessTransfer } from "@/lib/risk";
 import { naira } from "@/lib/format";
+import { digits, str, MAX_TRANSFER } from "@/lib/guard";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   await hydrate();
-  const { userId, account, name, amount, hour, confirm, override } = await req.json();
+  const body = await req.json();
+  const { userId, hour, confirm, override } = body;
   const user = getUser(userId);
   if (!user) return Response.json({ error: "unknown user" }, { status: 404 });
 
-  const amt = Number(amount) || 0;
-  const acct = String(account || "");
+  const amt = Number(body.amount) || 0;
+  const acct = digits(body.account, 20);
+  const name = str(body.name, 80);
   const h = typeof hour === "number" ? hour : new Date().getHours();
 
-  // Money really moves now, so the amount has to be a real positive number —
-  // a negative "transfer" would quietly drain the recipient instead.
-  if (!Number.isFinite(amt) || amt <= 0) {
+  // Money really moves now, so the amount has to be a real positive number in a
+  // sane range — a negative "transfer" would quietly drain the recipient instead.
+  if (!Number.isFinite(amt) || amt <= 0 || amt > MAX_TRANSFER) {
     return Response.json({ status: "failed", error: "amount" });
   }
   if (acct && acct === user.accountNumber) {
