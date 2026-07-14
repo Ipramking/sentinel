@@ -88,5 +88,8 @@ export const api = {
     req("/api/report", { userId, account, name, txnId, message }),
   verifyRef: (ref: string) => req("/api/verify", { ref }),
   ledger: () => req("/api/ledger"),
+  trustLog: (userId: string) => req(`/api/trust-log?userId=${userId}`),
+  setToggle: (userId: string, key: string, value: boolean) =>
+    req("/api/trust-log", { userId, key, value }),
   reset: () => req("/api/reset", {}),
 };

@@ -13,6 +13,7 @@ const NAV = [
   { href: "/dashboard", label: "Home", icon: "home" },
   { href: "/transfer", label: "Send", icon: "send" },
   { href: "/scamguard", label: "ScamGuard", icon: "shield-check" },
+  { href: "/trust", label: "Trust", icon: "lock" },
 ];
 
 export function AppShell({

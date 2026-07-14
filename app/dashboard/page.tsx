@@ -28,9 +28,13 @@ type State = {
 
 const ACTIONS = [
   { icon: "send", label: "Send", href: "/transfer" },
+  { icon: "phone", label: "Airtime" },
+  { icon: "wifi", label: "Data" },
+  { icon: "receipt", label: "Bills" },
   { icon: "shield-check", label: "ScamGuard", href: "/scamguard" },
   { icon: "search", label: "Verify", href: "/verify" },
-  { icon: "receipt", label: "Bills" },
+  { icon: "lock", label: "Trust", href: "/trust" },
+  { icon: "grid", label: "More" },
 ];
 
 export default function Dashboard() {
@@ -110,9 +114,14 @@ export default function Dashboard() {
                   <div className="font-bold text-sm">{s.user.name}</div>
                 </div>
               </button>
-              <span className="chip" style={{ background: "rgba(56,198,238,0.14)", color: "var(--accent-soft)", border: "1px solid rgba(56,198,238,0.32)" }}>
-                <span className="pulse-dot" /> Protected
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="chip" style={{ background: "rgba(56,198,238,0.14)", color: "var(--accent-soft)", border: "1px solid rgba(56,198,238,0.32)" }}>
+                  <span className="pulse-dot" /> Protected
+                </span>
+                <Link href="/trust" className="icon-btn" style={{ color: "#fff" }} aria-label="Security alerts">
+                  <Icon name="bell" size={20} />
+                </Link>
+              </div>
             </div>
 
             {/* No safe-mode indicator anywhere — while coerced, the decoy must be
@@ -170,15 +179,18 @@ export default function Dashboard() {
           {/* someone you watch needs a look */}
           {s.guardianOpenAlerts > 0 && (
             <div className="px-4 pt-3">
-              <StatusCard tone="warn" className="flex items-center gap-3">
-                <IconTile name="users" tone="warn" size={42} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-sm">Someone you watch tried an unusual payment</div>
-                  <div className="text-[0.78125rem]" style={{ color: "var(--muted)" }}>
-                    {s.guardianOpenAlerts} attempt{s.guardianOpenAlerts === 1 ? "" : "s"} waiting for your look
+              <Link href="/trust" className="block">
+                <StatusCard tone="warn" className="flex items-center gap-3">
+                  <IconTile name="users" tone="warn" size={42} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm">Someone you watch tried an unusual payment</div>
+                    <div className="text-[0.78125rem]" style={{ color: "var(--muted)" }}>
+                      {s.guardianOpenAlerts} attempt{s.guardianOpenAlerts === 1 ? "" : "s"} waiting for your look
+                    </div>
                   </div>
-                </div>
-              </StatusCard>
+                  <Icon name="chevron" size={18} className="shrink-0" style={{ color: "var(--muted)" }} />
+                </StatusCard>
+              </Link>
             </div>
           )}
 
@@ -201,15 +213,18 @@ export default function Dashboard() {
 
           {/* network protection */}
           <div className="px-4 pt-3">
-            <StatusCard tone="ok" className="flex items-center gap-3">
-              <IconTile name="users" tone="ok" size={42} />
-              <div className="flex-1 min-w-0">
-                <div className="font-bold text-sm">You&rsquo;re on the Sentinel network</div>
-                <div className="text-[0.78125rem]" style={{ color: "var(--muted)" }}>
-                  {s.network.protectedUsers} people covered, {s.network.reports} scam account{s.network.reports === 1 ? "" : "s"} shut out for all of them
+            <Link href="/trust" className="block">
+              <StatusCard tone="ok" className="flex items-center gap-3">
+                <IconTile name="users" tone="ok" size={42} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm">You&rsquo;re on the Sentinel network</div>
+                  <div className="text-[0.78125rem]" style={{ color: "var(--muted)" }}>
+                    {s.network.protectedUsers} people covered, {s.network.reports} scam account{s.network.reports === 1 ? "" : "s"} shut out for all of them
+                  </div>
                 </div>
-              </div>
-            </StatusCard>
+                <Icon name="chevron" size={18} className="shrink-0" style={{ color: "var(--muted)" }} />
+              </StatusCard>
+            </Link>
           </div>
 
           {/* activity — tap any row for details, or to report it */}

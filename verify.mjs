@@ -177,5 +177,22 @@ const ast = await get("/api/state?userId=ada");
 ok("state carries the weekly pace insight", ast.insight && ast.insight.typicalWeek === 95000 && ast.insight.weekOut > 0, JSON.stringify(ast.insight));
 ok("pace ratio adds up", Math.abs(ast.insight.ratio - ast.insight.weekOut / 95000) < 0.01);
 
+// 16. Trust Center: decision log, toggles, safe-mode discretion
+const tl = await get("/api/trust-log?userId=ada");
+ok("trust log lists decisions with reasons", tl.decisions.length > 0 && !!tl.decisions[0].reason && Array.isArray(tl.decisions[0].dataUsed), JSON.stringify(tl.decisions?.[0]));
+ok("trust log carries engine + core stats", tl.aiEngine === "auto" && tl.core.examples > 0);
+await post("/api/unlock", { userId: "bola", pin: "9222" });
+const tlSafe = await get("/api/trust-log?userId=bola");
+ok("coerced log hides duress traces", !tlSafe.alerts.some((a) => a.kind === "duress") && !tlSafe.decisions.some((d) => d.outcome === "safe"));
+await post("/api/unlock", { userId: "bola", pin: "4321" });
+const tlBack = await get("/api/trust-log?userId=bola");
+ok("real log shows the silent alarms afterwards", tlBack.alerts.some((a) => a.kind === "duress") && tlBack.decisions.some((d) => d.outcome === "safe"));
+await post("/api/trust-log", { userId: "ada", key: "networkFeed", value: false });
+const offTry = await post("/api/transfer", { userId: "ada", account: "3388776655", name: "Acct Verification Team", amount: 1000, hour: 14 });
+ok("networkFeed off skips the herd block", !offTry.risk.ledgerHit, JSON.stringify(offTry.risk));
+await post("/api/trust-log", { userId: "ada", key: "networkFeed", value: true });
+const onTry = await post("/api/transfer", { userId: "ada", account: "3388776655", name: "Acct Verification Team", amount: 1000, hour: 14 });
+ok("networkFeed back on restores the block", onTry.status === "blocked" && onTry.risk.score === 100, JSON.stringify(onTry.risk));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
