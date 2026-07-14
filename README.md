@@ -32,4 +32,4 @@ npm install
 npm run dev        # http://localhost:3000
 ```
 
-More here as the build progresses.
+Demo PINs, every endpoint, and `curl` examples: [docs/API.md](docs/API.md).
