@@ -31,8 +31,25 @@ export type User = {
   trustedContact: string;
   safeMode: boolean;
   duressView?: "decoy" | "network"; // how safe mode is disguised this session
+  guardianId?: string; // someone who watches out for this account — can delay, never access
   transactions: Txn[];
   baseline: Baseline;
+};
+
+/* Guardian Mode: the guardian sees only the flagged attempt — never the balance
+   or history. They can press pause on it, or wave it through. */
+export type GuardianAlert = {
+  id: string;
+  wardId: string;
+  wardName: string;
+  guardianId: string;
+  amount: number;
+  name: string; // who the ward tried to pay
+  account?: string;
+  risk: "review" | "block";
+  status: "open" | "held" | "released" | "cleared";
+  holdUntil?: number;
+  ts: number;
 };
 
 /** One report protects everyone: accounts land here once and block network-wide. */
@@ -58,7 +75,7 @@ export type Decision = {
 export type Alert = {
   id: string;
   userId: string;
-  kind: "duress" | "fraud-report";
+  kind: "duress" | "fraud-report" | "guardian";
   message: string;
   ts: number;
 };
@@ -88,4 +105,5 @@ export type DB = {
   toggles: Record<string, DataToggles>;
   model: CoreModel;
   aiPrefs: Record<string, AiEngine>;
+  guardianAlerts: GuardianAlert[];
 };

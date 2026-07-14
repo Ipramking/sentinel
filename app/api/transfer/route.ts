@@ -25,6 +25,34 @@ export async function POST(req: Request) {
     return Response.json({ status: "failed", error: "insufficient", available, risk });
   }
 
+  // A guardian hold pauses anything risky. Everyday (low-risk) payments still work —
+  // a guardian can slow a scam down, never lock someone out of their own life.
+  if (risk.level !== "allow" && !user.safeMode) {
+    const hold = db.guardianAlerts.find(
+      (a) => a.wardId === userId && a.status === "held" && (a.holdUntil ?? 0) > Date.now(),
+    );
+    if (hold) {
+      return Response.json({ status: "held", holdUntil: hold.holdUntil, risk });
+    }
+  }
+
+  // Tell the guardian about a fresh risky attempt (first sight only, not confirm/override).
+  const notifyGuardian = () => {
+    if (!user.guardianId || user.safeMode) return;
+    db.guardianAlerts.unshift({
+      id: uid("g"),
+      wardId: user.id,
+      wardName: user.name,
+      guardianId: user.guardianId,
+      amount: amt,
+      name: name || "Unknown recipient",
+      account: acct,
+      risk: risk.level === "block" ? "block" : "review",
+      status: "open",
+      ts: Date.now(),
+    });
+  };
+
   const complete = () => {
     const txn = {
       id: uid("t"),
@@ -75,6 +103,7 @@ export async function POST(req: Request) {
       await persist();
       return Response.json({ status: "completed", overridden: true, ref: txn.ref, risk });
     }
+    notifyGuardian();
     db.decisions.unshift({
       id: uid("d"),
       userId,
@@ -106,6 +135,7 @@ export async function POST(req: Request) {
     return Response.json({ status: "completed", steppedUp: true, ref: txn.ref, risk });
   }
 
+  notifyGuardian();
   db.decisions.unshift({
     id: uid("d"),
     userId,

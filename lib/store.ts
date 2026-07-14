@@ -19,6 +19,7 @@ function ada(): User {
     duressPin: "9111",
     trustedContact: "Chidi (brother)",
     safeMode: false,
+    guardianId: "bola", // Bola watches out for Ada — the two-device Guardian demo
     baseline: {
       typicalMax: 60000,
       usualHours: [6, 23],
@@ -92,6 +93,7 @@ function seed(): DB {
     toggles: { ada: defaultToggles(), bola: defaultToggles() },
     model: seedModel(),
     aiPrefs: {},
+    guardianAlerts: [],
   };
   ensureRefs(data);
   return data;
@@ -115,6 +117,7 @@ function adopt(data: DB) {
   db.toggles = data.toggles;
   db.model = data.model ?? seedModel();
   db.aiPrefs = data.aiPrefs ?? {};
+  db.guardianAlerts = data.guardianAlerts ?? [];
   for (const t of Object.values(db.toggles)) t.networkFeed ??= true;
   ensureRefs(db);
 }

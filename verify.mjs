@@ -152,5 +152,25 @@ ok("odd tap rhythm still never locks you out", c2.ok && c2.mode === "normal");
 const c3 = await post("/api/unlock", { userId: judge, pin: "5555", cadence: 500 });
 ok("new accounts start learning the rhythm", c3.ok && c3.mode === "normal");
 
+// 14. Guardian Mode — delay, never access
+const g0 = await get("/api/guardian?userId=bola");
+ok("bola guards ada out of the box", g0.wards.some((w) => w.id === "ada"), JSON.stringify(g0.wards));
+await post("/api/transfer", { userId: "ada", account: "0611223344", name: "Odd Stranger", amount: 95000, hour: 14 });
+const g1 = await get("/api/guardian?userId=bola");
+const gAlert = g1.alerts.find((a) => a.wardId === "ada" && a.status === "open");
+ok("risky attempt shows up for the guardian", !!gAlert, JSON.stringify(g1.alerts?.[0]));
+const hold = await post("/api/guardian", { userId: "bola", action: "hold", alertId: gAlert?.id });
+ok("guardian can press pause", hold.ok && hold.alert.status === "held");
+const heldTry = await post("/api/transfer", { userId: "ada", account: "0611223344", name: "Odd Stranger", amount: 95000, hour: 14 });
+ok("risky payment held while paused", heldTry.status === "held" && heldTry.holdUntil > Date.now(), heldTry.status);
+const everyday = await post("/api/transfer", { userId: "ada", account: "0221145678", name: "Mummy", amount: 5000, hour: 14 });
+ok("everyday payment unaffected by the hold", everyday.status === "completed", everyday.status);
+const rel = await post("/api/guardian", { userId: "bola", action: "release", alertId: gAlert?.id });
+ok("guardian can release the hold", rel.ok && rel.alert.status === "released");
+const setG = await post("/api/guardian", { userId: judge, action: "set", phone: "08031112214" });
+ok("anyone can add a guardian by phone", setG.ok && setG.guardian.name === "Ada Okoro", JSON.stringify(setG));
+const remG = await post("/api/guardian", { userId: judge, action: "remove" });
+ok("guardian can be removed", remG.ok === true);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -20,6 +20,7 @@ type State = {
   safeMode: boolean;
   duressView?: "decoy" | "network";
   transactions: Txn[];
+  guardianOpenAlerts: number;
   reportedAccounts: string[];
   network: { reports: number; protectedUsers: number };
 };
@@ -164,6 +165,21 @@ export default function Dashboard() {
               ),
             )}
           </div>
+
+          {/* someone you watch needs a look */}
+          {s.guardianOpenAlerts > 0 && (
+            <div className="px-4 pt-3">
+              <StatusCard tone="warn" className="flex items-center gap-3">
+                <IconTile name="users" tone="warn" size={42} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm">Someone you watch tried an unusual payment</div>
+                  <div className="text-[0.78125rem]" style={{ color: "var(--muted)" }}>
+                    {s.guardianOpenAlerts} attempt{s.guardianOpenAlerts === 1 ? "" : "s"} waiting for your look
+                  </div>
+                </div>
+              </StatusCard>
+            </div>
+          )}
 
           {/* network protection */}
           <div className="px-4 pt-3">

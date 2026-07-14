@@ -6,12 +6,12 @@ import { AppShell } from "@/components/AppShell";
 import { Icon } from "@/components/icons";
 import { SectionLabel, StatusCard } from "@/components/ui";
 import { api, getUserId } from "@/lib/client";
-import { naira, maskAccount } from "@/lib/format";
+import { clockTime, naira, maskAccount } from "@/lib/format";
 import { downloadReceipt } from "@/lib/receipt";
 
 type Reason = { text: string; data: string };
 type Risk = { score: number; level: string; headline: string; reasons: Reason[]; ledgerHit?: { name?: string; reason: string; reportedBy: string } };
-type Result = { status: string; frictionless?: boolean; steppedUp?: boolean; overridden?: boolean; error?: string; available?: number; ref?: string; risk: Risk };
+type Result = { status: string; frictionless?: boolean; steppedUp?: boolean; overridden?: boolean; error?: string; available?: number; ref?: string; holdUntil?: number; risk: Risk };
 type Me = { name: string; accountNumber: string; safeMode: boolean };
 
 const SHORTCUTS = [
@@ -34,6 +34,7 @@ export default function Transfer() {
   const [formError, setFormError] = useState("");
   const [reported, setReported] = useState(false);
   const [netReports, setNetReports] = useState(0);
+  const [heldUntil, setHeldUntil] = useState<number | null>(null);
 
   useEffect(() => {
     api.state(uid).then((s) => {
@@ -46,15 +47,25 @@ export default function Transfer() {
   const amt = Number(amount) || 0;
   const canSend = account.length >= 4 && amt > 0;
 
+  // A guardian hold bounces the attempt back to the form with an explanation.
+  function handleHold(r: Result): boolean {
+    if (r.status !== "held") return false;
+    setHeldUntil(r.holdUntil ?? Date.now() + 30 * 60_000);
+    setPhase("form");
+    return true;
+  }
+
   async function submit() {
     setBusy(true);
     setFormError("");
+    setHeldUntil(null);
     try {
       const r: Result = await api.transfer(uid, account, name, amt);
       if (r.status === "failed" && r.error === "insufficient") {
         setFormError(`Not enough in the account. You've got ${naira(r.available ?? 0)} available.`);
         return;
       }
+      if (handleHold(r)) return;
       setResult(r);
       setPhase(r.status === "completed" ? "done" : r.status === "blocked" ? "blocked" : "review");
     } finally {
@@ -66,6 +77,7 @@ export default function Transfer() {
     setBusy(true);
     try {
       const r: Result = await api.overrideTransfer(uid, account, name, amt);
+      if (handleHold(r)) return;
       if (r.status === "completed") {
         setResult(r);
         setPhase("done");
@@ -148,6 +160,18 @@ export default function Transfer() {
               ))}
             </div>
 
+            {heldUntil && (
+              <StatusCard tone="warn" className="mt-3">
+                <div className="flex items-center gap-2 font-bold text-sm" style={{ color: "var(--warn)" }}>
+                  <Icon name="pause" size={16} /> Your guardian pressed pause
+                </div>
+                <p className="text-[0.8125rem] mt-1.5" style={{ color: "var(--muted)" }}>
+                  They saw this unusual payment and asked for a short hold. It opens up again at{" "}
+                  <b className="mono" style={{ color: "var(--ink)" }}>{clockTime(heldUntil)}</b>, or sooner if they
+                  release it. Your everyday payments still go through as normal.
+                </p>
+              </StatusCard>
+            )}
             {formError && (
               <div className="text-[0.8125rem] font-semibold mt-3 text-center" style={{ color: "var(--danger)" }} role="alert">
                 {formError}

@@ -17,6 +17,10 @@ export async function GET(req: Request) {
     ? user.decoyTxns.slice().sort((a, b) => b.ts - a.ts)
     : user.transactions.slice().sort((a, b) => b.ts - a.ts);
 
+  const guardianOpenAlerts = db.guardianAlerts.filter(
+    (a) => a.guardianId === userId && (a.status === "open" || a.status === "held"),
+  ).length;
+
   return Response.json({
     user: {
       id: user.id,
@@ -30,6 +34,7 @@ export async function GET(req: Request) {
     safeMode: safe,
     duressView: safe ? user.duressView ?? "decoy" : undefined,
     transactions,
+    guardianOpenAlerts,
     reportedAccounts: db.ledger.map((e) => e.account),
     network: { reports: db.ledger.length, protectedUsers: Object.keys(db.users).length },
   });

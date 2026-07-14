@@ -78,6 +78,11 @@ export const api = {
   scamCheck: (payload: { userId: string; text?: string; imageBase64?: string; mimeType?: string }) =>
     req("/api/scam-check", payload),
   engine: (userId: string) => req(`/api/engine?userId=${userId}`),
+  guardian: (userId: string) => req(`/api/guardian?userId=${userId}`),
+  guardianSet: (userId: string, phone: string) => req("/api/guardian", { userId, action: "set", phone }),
+  guardianRemove: (userId: string) => req("/api/guardian", { userId, action: "remove" }),
+  guardianAct: (userId: string, action: "hold" | "release" | "clear", alertId: string) =>
+    req("/api/guardian", { userId, action, alertId }),
   setAiEngine: (userId: string, aiEngine: string) => req("/api/engine", { userId, aiEngine }),
   report: (userId: string, account: string, name: string, txnId?: string, message?: string) =>
     req("/api/report", { userId, account, name, txnId, message }),
