@@ -65,7 +65,12 @@ network threat feed) and answers one of:
 - `{ "status": "review", "risk": … }` — step up, then resend with `"confirm": true`
 - `{ "status": "blocked", "risk": … }` — held; resend with `"override": true` if you insist
 - `{ "status": "held", "holdUntil": … }` — your guardian pressed pause
-- `{ "status": "failed", "error": "insufficient" }`
+- `{ "status": "failed", "error": "insufficient" | "self" | "amount" }`
+
+Transfers are real inside Sentinel: if the account number belongs to another Sentinel
+user, their balance grows and the incoming transfer (same receipt reference) appears
+in their history. Try it on two devices — pay Bola (`0099887766`) from Ada and watch
+it land. A safe-mode (coerced) send never credits anyone; no real money moves.
 
 `hour` (0–23) is a demo control so you can simulate a 2am transfer at 2pm.
 

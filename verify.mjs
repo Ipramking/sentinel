@@ -196,5 +196,40 @@ await post("/api/trust-log", { userId: "ada", key: "networkFeed", value: true })
 const onTry = await post("/api/transfer", { userId: "ada", account: "3388776655", name: "Acct Verification Team", amount: 1000, hour: 14 });
 ok("networkFeed back on restores the block", onTry.status === "blocked" && onTry.risk.score === 100, JSON.stringify(onTry.risk));
 
+// 17. real internal transfers — money actually moves between Sentinel accounts
+const adaBefore = (await get("/api/state?userId=ada")).balance;
+const pay = await post("/api/transfer", { userId: judge, account: "0011223344", name: "Ada Okoro", amount: 10000, hour: 14, confirm: true });
+ok("internal transfer completes", pay.status === "completed", JSON.stringify(pay));
+const adaAfter = await get("/api/state?userId=ada");
+ok("recipient balance actually grew", adaAfter.balance === adaBefore + 10000, `${adaBefore} -> ${adaAfter.balance}`);
+const incoming = adaAfter.transactions.find((t) => t.dir === "in" && t.name === "Judge Test" && t.amount === 10000);
+ok("incoming txn lands in recipient history", !!incoming, JSON.stringify(adaAfter.transactions?.slice(0, 2)));
+ok("both sides share the receipt ref", !!incoming?.ref && incoming.ref === pay.ref, `${incoming?.ref} vs ${pay.ref}`);
+const selfTry = await post("/api/transfer", { userId: "ada", account: "0011223344", name: "Me", amount: 100, hour: 14 });
+ok("self-transfer rejected", selfTry.status === "failed" && selfTry.error === "self");
+const negTry = await post("/api/transfer", { userId: judge, account: "0011223344", name: "Ada Okoro", amount: -500, hour: 14 });
+ok("negative amount rejected", negTry.status === "failed" && negTry.error === "amount");
+// a coerced send to a real account must never credit them — no real money moves
+await post("/api/unlock", { userId: "bola", pin: "9222" });
+let bco = await get("/api/state?userId=bola");
+for (let i = 0; i < 20 && bco.balance < 100; i++) {
+  await post("/api/unlock", { userId: "bola", pin: "9222" });
+  bco = await get("/api/state?userId=bola");
+}
+const adaBefore2 = (await get("/api/state?userId=ada")).balance;
+await post("/api/transfer", { userId: "bola", account: "0011223344", name: "Ada", amount: 100, hour: 14, confirm: true });
+const adaAfter2 = (await get("/api/state?userId=ada")).balance;
+ok("coerced send never credits the recipient", adaAfter2 === adaBefore2, `${adaBefore2} -> ${adaAfter2}`);
+await post("/api/unlock", { userId: "bola", pin: "4321" });
+// the full scammer arc: get paid, get reported, get frozen out network-wide
+const scam = await post("/api/signup", { name: "Sly Vendor", phone: "08055512345", pin: "7777", duressPin: "8778" });
+const payScam = await post("/api/transfer", { userId: "ada", account: scam.accountNumber, name: "Sly Vendor", amount: 20000, hour: 14, confirm: true });
+ok("paying the soon-to-be-reported vendor works", payScam.status === "completed", JSON.stringify(payScam));
+const scamBal = (await get(`/api/state?userId=${scam.userId}`)).balance;
+ok("the vendor really received it", scamBal === 150000 + 20000, `bal=${scamBal}`);
+await post("/api/report", { userId: "ada", account: scam.accountNumber, name: "Sly Vendor" });
+const blockScam = await post("/api/transfer", { userId: "bola", account: scam.accountNumber, name: "Whoever", amount: 500, hour: 14 });
+ok("reported vendor frozen out for everyone", blockScam.status === "blocked" && blockScam.risk.score === 100, JSON.stringify(blockScam.risk));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

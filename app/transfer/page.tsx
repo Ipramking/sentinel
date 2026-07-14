@@ -16,6 +16,7 @@ type Me = { name: string; accountNumber: string; safeMode: boolean };
 
 const SHORTCUTS = [
   { label: "Mummy · ₦15,000", name: "Mummy", account: "0221145678", amount: "15000" },
+  { label: "Bola (real Sentinel account) · ₦8,000", name: "Bola Adeyemi", account: "0099887766", amount: "8000" },
   { label: "New friend · ₦45,000", name: "Chidera (new)", account: "0455667788", amount: "45000" },
   { label: "⚠ Suspicious · ₦180,000", name: "Acct Verification Team", account: "3388776655", amount: "180000" },
 ];
@@ -63,6 +64,14 @@ export default function Transfer() {
       const r: Result = await api.transfer(uid, account, name, amt);
       if (r.status === "failed" && r.error === "insufficient") {
         setFormError(`Not enough in the account. You've got ${naira(r.available ?? 0)} available.`);
+        return;
+      }
+      if (r.status === "failed" && r.error === "self") {
+        setFormError("That's your own account — you can't send money to yourself.");
+        return;
+      }
+      if (r.status === "failed") {
+        setFormError("That transfer doesn't look right. Check the amount and try again.");
         return;
       }
       if (handleHold(r)) return;

@@ -1,4 +1,4 @@
-import { db, getUser, hydrate, persist, recordTxn, uid } from "@/lib/store";
+import { db, findUserByAccount, getUser, hydrate, persist, recordTxn, uid } from "@/lib/store";
 import { assessTransfer } from "@/lib/risk";
 import { naira } from "@/lib/format";
 
@@ -13,6 +13,16 @@ export async function POST(req: Request) {
   const amt = Number(amount) || 0;
   const acct = String(account || "");
   const h = typeof hour === "number" ? hour : new Date().getHours();
+
+  // Money really moves now, so the amount has to be a real positive number —
+  // a negative "transfer" would quietly drain the recipient instead.
+  if (!Number.isFinite(amt) || amt <= 0) {
+    return Response.json({ status: "failed", error: "amount" });
+  }
+  if (acct && acct === user.accountNumber) {
+    return Response.json({ status: "failed", error: "self" });
+  }
+
   const risk = assessTransfer(user, amt, acct, h);
 
   const reasonText = risk.reasons.map((r) => r.text).join(" ");
@@ -63,12 +73,37 @@ export async function POST(req: Request) {
       ts: Date.now(),
     };
     recordTxn(user, txn);
+    const withRef = txn as typeof txn & { ref?: string };
+
+    // If the account number belongs to a Sentinel user, the money really arrives:
+    // their balance grows and the incoming transfer (same receipt ref) lands in
+    // their history. Never from a coerced session — safe-mode sends are decoy
+    // theatre, so no real money moves and nobody gets credited.
+    if (!user.safeMode) {
+      const recipient = findUserByAccount(acct);
+      if (recipient && recipient.id !== user.id) {
+        // Credit the real balance directly, even if the recipient is themselves
+        // coerced right now — their money is real, they just can't see it yet.
+        recipient.balance += amt;
+        recipient.transactions.unshift({
+          id: uid("t"),
+          dir: "in",
+          name: user.name,
+          account: user.accountNumber,
+          amount: amt,
+          ts: withRef.ts,
+          note: "Sentinel transfer",
+          ref: withRef.ref,
+        });
+      }
+    }
+
     // Sentinel learns: a send you completed makes this payee part of your normal pattern.
     // Never from a coerced session — those sends aren't "you".
     if (!user.safeMode && acct && !user.baseline.knownPayees.includes(acct)) {
       user.baseline.knownPayees.push(acct);
     }
-    return txn as typeof txn & { ref?: string };
+    return withRef;
   };
 
   if (risk.level === "allow") {

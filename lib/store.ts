@@ -191,6 +191,11 @@ export function findUserByPhone(phone: string): User | undefined {
   return Object.values(db.users).find((u) => u.phone.replace(/\D/g, "") === p);
 }
 
+export function findUserByAccount(account: string): User | undefined {
+  const a = String(account || "").replace(/\D/g, "");
+  return Object.values(db.users).find((u) => u.accountNumber === a);
+}
+
 export function getToggles(id: string): DataToggles {
   return db.toggles[id] ?? defaultToggles();
 }
