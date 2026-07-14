@@ -23,6 +23,7 @@ function ada(): User {
       typicalMax: 60000,
       usualHours: [6, 23],
       knownPayees: ["0221145678", "1029384756", "5544332211"],
+      cadence: { mean: 340, samples: 6 }, // Ada's learned PIN tap rhythm
     },
     transactions: [
       { id: "t1", dir: "in", name: "Salary — Kola & Co", amount: 420000, ts: now - 2 * DAY, note: "March salary" },
@@ -54,6 +55,7 @@ function bola(): User {
       typicalMax: 40000,
       usualHours: [6, 23],
       knownPayees: ["7788990011", "1234509876"],
+      cadence: { mean: 380, samples: 6 },
     },
     transactions: [
       { id: "b1", dir: "in", name: "Ada Okoro", account: "0011223344", amount: 12000, ts: now - 1.1 * DAY, note: "Contribution" },

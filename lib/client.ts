@@ -41,7 +41,21 @@ async function req(path: string, body?: unknown) {
     throw new Error("session-expired");
   }
   if (!res.ok) throw new Error(`${path} → ${res.status}`);
-  return res.json();
+  const json = await res.json();
+  // Broadcast safe-mode so shell-level guards (screenshot deterrent) can react
+  // without every page threading state down.
+  if (typeof window !== "undefined" && path.startsWith("/api/state") && typeof json.safeMode === "boolean") {
+    sessionStorage.setItem(SAFE_KEY, json.safeMode ? "1" : "");
+    window.dispatchEvent(new CustomEvent("sentinel-mode", { detail: json.safeMode }));
+  }
+  return json;
+}
+
+const SAFE_KEY = "sentinel.safeMode";
+
+export function getSafeMode(): boolean {
+  if (typeof window === "undefined") return false;
+  return sessionStorage.getItem(SAFE_KEY) === "1";
 }
 
 export function logout() {
@@ -50,8 +64,8 @@ export function logout() {
 
 export const api = {
   state: (userId: string) => req(`/api/state?userId=${userId}`),
-  unlock: (userId: string, pin: string) => req("/api/unlock", { userId, pin }),
-  unlockByPhone: (phone: string, pin: string) => req("/api/unlock", { phone, pin }),
+  unlock: (userId: string, pin: string, cadence?: number) => req("/api/unlock", { userId, pin, cadence }),
+  unlockByPhone: (phone: string, pin: string, cadence?: number) => req("/api/unlock", { phone, pin, cadence }),
   signup: (payload: { name: string; phone: string; pin: string; duressPin: string }) =>
     req("/api/signup", payload),
   topup: (userId: string) => req("/api/topup", { userId }),

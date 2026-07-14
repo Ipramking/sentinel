@@ -6,6 +6,7 @@ import Link from "next/link";
 import { isUnlocked } from "@/lib/client";
 import { GuardFab } from "./GuardFab";
 import { Icon } from "./icons";
+import { ScreenshotGuard } from "./ScreenshotGuard";
 import { PageSkeleton } from "./ui";
 
 const NAV = [
@@ -42,6 +43,7 @@ export function AppShell({
         </div>
       )}
       {ready && active !== "/scamguard" && <GuardFab />}
+      <ScreenshotGuard />
       <nav className="tabbar" aria-label="Main" style={{ gridTemplateColumns: `repeat(${NAV.length}, 1fr)` }}>
         {NAV.map((n) => {
           const on = n.href === active;

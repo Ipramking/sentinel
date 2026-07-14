@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
@@ -21,6 +21,8 @@ export default function SignIn() {
   const [busy, setBusy] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [expired, setExpired] = useState(false);
+  // Timestamps of PIN-pad taps — their average gap is the behavioural rhythm signal.
+  const taps = useRef<number[]>([]);
 
   useEffect(() => {
     const saved = getUserId();
@@ -41,8 +43,15 @@ export default function SignIn() {
   async function submit(code: string) {
     setBusy(true);
     setError("");
+    // mean gap between the 4 taps; undefined when typed too oddly to measure
+    const ts = taps.current;
+    const gaps = ts.slice(1).map((t, i) => t - ts[i]);
+    const cadence =
+      gaps.length === 3 ? Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length) : undefined;
+    taps.current = [];
     try {
-      const r = mode === "profile" ? await api.unlock(sel, code) : await api.unlockByPhone(phone, code);
+      const r =
+        mode === "profile" ? await api.unlock(sel, code, cadence) : await api.unlockByPhone(phone, code, cadence);
       if (r.ok) {
         setUserId(r.userId);
         setUnlocked(true);
@@ -63,11 +72,13 @@ export default function SignIn() {
     if (busy) return;
     setError("");
     if (d === "del") {
+      taps.current.pop();
       setPin((p) => p.slice(0, -1));
       return;
     }
     setPin((p) => {
       if (p.length >= 4) return p;
+      taps.current.push(Date.now());
       const next = p + d;
       if (next.length === 4) setTimeout(() => submit(next), 120);
       return next;

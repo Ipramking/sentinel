@@ -14,6 +14,7 @@ export type Baseline = {
   typicalMax: number; // typical largest transfer they make
   usualHours: [number, number]; // [startHour, endHourExclusive], 24h
   knownPayees: string[]; // account numbers they've safely paid before
+  cadence?: { mean: number; samples: number }; // avg ms between PIN taps — learned, never gating
 };
 
 export type User = {

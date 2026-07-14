@@ -626,6 +626,39 @@ body {
   }
 }
 
+/* ================= duress protections ================= */
+.shot-block {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: #000;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+@media print {
+  html.duress body::after {
+    content: "FAKE — SAFE MODE — NO REAL FUNDS MOVED";
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    font-weight: 800;
+    text-align: center;
+    color: rgba(217, 45, 63, 0.85);
+    background: rgba(255, 255, 255, 0.72);
+    transform: rotate(-18deg);
+    z-index: 9999;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sonar-ring,
   .pulse-dot,

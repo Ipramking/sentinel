@@ -139,5 +139,13 @@ const led2 = await get("/api/ledger");
 ok("checking a decoy ref trips a silent duress alert", led2.alerts.some((a) => a.kind === "duress"));
 await post("/api/unlock", { userId: "bola", pin: "4321" });
 
+// 13. PIN tap rhythm — a learned signal that never gates
+const c1 = await post("/api/unlock", { userId: "ada", pin: "1234", cadence: 350 });
+ok("usual tap rhythm signs straight in", c1.ok && c1.mode === "normal");
+const c2 = await post("/api/unlock", { userId: "ada", pin: "1234", cadence: 2400 });
+ok("odd tap rhythm still never locks you out", c2.ok && c2.mode === "normal");
+const c3 = await post("/api/unlock", { userId: judge, pin: "5555", cadence: 500 });
+ok("new accounts start learning the rhythm", c3.ok && c3.mode === "normal");
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

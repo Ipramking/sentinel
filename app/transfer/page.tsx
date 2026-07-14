@@ -372,7 +372,7 @@ function Done({ result, name, account, amount, me, onHome, onAgain }: { result: 
           {over
             ? "You told us to send it, so we did. It's in the log, and we'll keep an eye on this account."
             : result.frictionless
-              ? "You'd already proven it was you: your PIN and this device. That's enough for a normal transfer, so we didn't ask for an extra code on top."
+              ? "You'd already proven it was you: your PIN, this device, and your typing rhythm. That's enough for a normal transfer, so we didn't ask for an extra code on top."
               : "You cleared the extra check, so the money went out on the spot."}
         </p>
       </StatusCard>
