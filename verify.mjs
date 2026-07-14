@@ -110,6 +110,11 @@ let bst = await get("/api/state?userId=bola");
 ok("decoy balance shows (0-500)", bst.safeMode === true && bst.balance <= 500);
 ok("duress session picked a disguise", ["decoy", "network"].includes(bst.duressView), bst.duressView);
 ok("decoy history replaces the real one", bst.transactions.length === 5 && bst.transactions.some((t) => t.name === "Salary"), JSON.stringify(bst.transactions?.map((t) => t.name)));
+// the decoy balance rolls ₦0–500 — re-roll until it can afford the ₦100 coerced send
+for (let i = 0; i < 20 && bst.balance < 100; i++) {
+  await post("/api/unlock", { userId: "bola", pin: "9222" });
+  bst = await get("/api/state?userId=bola");
+}
 const cs = await post("/api/transfer", { userId: "bola", account: "0777666555", name: "Coerced Send", amount: 100, hour: 14, confirm: true });
 ok("coerced send completes against the decoy", cs.status === "completed");
 bst = await get("/api/state?userId=bola");
