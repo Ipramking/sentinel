@@ -124,5 +124,20 @@ ok("coerced txns absent from real history", !bst.transactions.some((t) => t.name
 const relearn = await post("/api/transfer", { userId: "bola", account: "0777666555", name: "Coerced Send", amount: 100, hour: 14 });
 ok("coerced payee was never learned", relearn.status === "review");
 
+// 12. receipts + public verify
+ok("completed transfer carries a receipt ref", /^SNT-/.test(t1c.ref || ""), t1c.ref);
+const v1 = await post("/api/verify", { ref: t1c.ref });
+ok("genuine ref verifies with real details", v1.ok && v1.found === true && v1.receipt.amount === 45000, JSON.stringify(v1));
+const v2 = await post("/api/verify", { ref: "SNT-FAKE-0000" });
+ok("made-up ref returns no record", v2.ok && v2.found === false);
+await post("/api/unlock", { userId: "bola", pin: "9222" });
+const dst = await get("/api/state?userId=bola");
+const decoyRef = dst.transactions.find((t) => t.ref)?.ref;
+const v3 = await post("/api/verify", { ref: decoyRef });
+ok("decoy ref plays dumb (same no-record answer)", v3.ok && v3.found === false, decoyRef);
+const led2 = await get("/api/ledger");
+ok("checking a decoy ref trips a silent duress alert", led2.alerts.some((a) => a.kind === "duress"));
+await post("/api/unlock", { userId: "bola", pin: "4321" });
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

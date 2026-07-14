@@ -26,23 +26,25 @@ export async function POST(req: Request) {
   }
 
   const complete = () => {
-    recordTxn(user, {
+    const txn = {
       id: uid("t"),
-      dir: "out",
+      dir: "out" as const,
       name: name || "Recipient",
       account: acct,
       amount: amt,
       ts: Date.now(),
-    });
+    };
+    recordTxn(user, txn);
     // Sentinel learns: a send you completed makes this payee part of your normal pattern.
     // Never from a coerced session — those sends aren't "you".
     if (!user.safeMode && acct && !user.baseline.knownPayees.includes(acct)) {
       user.baseline.knownPayees.push(acct);
     }
+    return txn as typeof txn & { ref?: string };
   };
 
   if (risk.level === "allow") {
-    complete();
+    const txn = complete();
     db.decisions.unshift({
       id: uid("d"),
       userId,
@@ -54,12 +56,12 @@ export async function POST(req: Request) {
       ts: Date.now(),
     });
     await persist();
-    return Response.json({ status: "completed", frictionless: true, risk });
+    return Response.json({ status: "completed", frictionless: true, ref: txn.ref, risk });
   }
 
   if (risk.level === "block") {
     if (override) {
-      complete();
+      const txn = complete();
       db.decisions.unshift({
         id: uid("d"),
         userId,
@@ -71,7 +73,7 @@ export async function POST(req: Request) {
         ts: Date.now(),
       });
       await persist();
-      return Response.json({ status: "completed", overridden: true, risk });
+      return Response.json({ status: "completed", overridden: true, ref: txn.ref, risk });
     }
     db.decisions.unshift({
       id: uid("d"),
@@ -89,7 +91,7 @@ export async function POST(req: Request) {
 
   // review
   if (confirm) {
-    complete();
+    const txn = complete();
     db.decisions.unshift({
       id: uid("d"),
       userId,
@@ -101,7 +103,7 @@ export async function POST(req: Request) {
       ts: Date.now(),
     });
     await persist();
-    return Response.json({ status: "completed", steppedUp: true, risk });
+    return Response.json({ status: "completed", steppedUp: true, ref: txn.ref, risk });
   }
 
   db.decisions.unshift({

@@ -6,11 +6,13 @@ import { AppShell } from "@/components/AppShell";
 import { Icon } from "@/components/icons";
 import { SectionLabel, StatusCard } from "@/components/ui";
 import { api, getUserId } from "@/lib/client";
-import { naira } from "@/lib/format";
+import { naira, maskAccount } from "@/lib/format";
+import { downloadReceipt } from "@/lib/receipt";
 
 type Reason = { text: string; data: string };
 type Risk = { score: number; level: string; headline: string; reasons: Reason[]; ledgerHit?: { name?: string; reason: string; reportedBy: string } };
-type Result = { status: string; frictionless?: boolean; steppedUp?: boolean; overridden?: boolean; error?: string; available?: number; risk: Risk };
+type Result = { status: string; frictionless?: boolean; steppedUp?: boolean; overridden?: boolean; error?: string; available?: number; ref?: string; risk: Risk };
+type Me = { name: string; accountNumber: string; safeMode: boolean };
 
 const SHORTCUTS = [
   { label: "Mummy · ₦15,000", name: "Mummy", account: "0221145678", amount: "15000" },
@@ -22,6 +24,7 @@ export default function Transfer() {
   const router = useRouter();
   const uid = typeof window !== "undefined" ? getUserId() : "ada";
   const [balance, setBalance] = useState<number | null>(null);
+  const [me, setMe] = useState<Me | null>(null);
   const [phase, setPhase] = useState<"form" | "review" | "blocked" | "done">("form");
   const [name, setName] = useState("");
   const [account, setAccount] = useState("");
@@ -36,6 +39,7 @@ export default function Transfer() {
     api.state(uid).then((s) => {
       setBalance(s.balance);
       setNetReports(s.network.reports);
+      setMe({ name: s.user.name, accountNumber: s.user.accountNumber, safeMode: s.safeMode });
     }).catch(() => {});
   }, [uid]);
 
@@ -176,7 +180,7 @@ export default function Transfer() {
         )}
 
         {phase === "done" && result && (
-          <Done result={result} name={name} amount={amt} onHome={() => router.push("/dashboard")} onAgain={reset} />
+          <Done result={result} name={name} account={account} amount={amt} me={me} onHome={() => router.push("/dashboard")} onAgain={reset} />
         )}
       </div>
     </AppShell>
@@ -344,7 +348,7 @@ function Action({ done, icon, text }: { done?: boolean; icon: string; text: stri
   );
 }
 
-function Done({ result, name, amount, onHome, onAgain }: { result: Result; name: string; amount: number; onHome: () => void; onAgain: () => void }) {
+function Done({ result, name, account, amount, me, onHome, onAgain }: { result: Result; name: string; account: string; amount: number; me: Me | null; onHome: () => void; onAgain: () => void }) {
   const over = !!result.overridden;
   const tone = over ? "warn" : "ok";
   const color = over ? "var(--warn)" : "var(--ok)";
@@ -373,7 +377,36 @@ function Done({ result, name, amount, onHome, onAgain }: { result: Result; name:
         </p>
       </StatusCard>
 
-      <button className="btn btn-primary btn-block mt-4" onClick={onHome}>Back to home</button>
+      {result.ref && (
+        <>
+          <div className="text-xs mt-3" style={{ color: "var(--muted)" }}>
+            Reference <span className="mono font-semibold" style={{ color: "var(--ink)" }}>{result.ref}</span>
+          </div>
+          {me && (
+            <button
+              className="btn btn-ghost btn-block mt-3"
+              onClick={() =>
+                downloadReceipt(
+                  {
+                    ref: result.ref!,
+                    amount,
+                    dir: "out",
+                    counterparty: name || "Recipient",
+                    account,
+                    ts: Date.now(),
+                    userName: me.name,
+                    userAccount: maskAccount(me.accountNumber),
+                  },
+                  me.safeMode,
+                )
+              }
+            >
+              <Icon name="download" size={17} /> Download receipt
+            </button>
+          )}
+        </>
+      )}
+      <button className="btn btn-primary btn-block mt-2" onClick={onHome}>Back to home</button>
       <button className="btn btn-ghost btn-block mt-2" onClick={onAgain}>Send another</button>
     </div>
   );

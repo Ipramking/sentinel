@@ -7,6 +7,7 @@ export type Txn = {
   ts: number;
   note?: string;
   reported?: boolean; // user flagged this past transfer as a scam
+  ref?: string; // receipt reference — decoy refs never verify as genuine
 };
 
 export type Baseline = {

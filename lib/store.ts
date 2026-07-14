@@ -67,8 +67,22 @@ function defaultToggles(): DataToggles {
   return { spendingHistory: true, deviceSignals: true, networkFeed: true };
 }
 
+/** Receipt reference. Decoy refs use the same shape so they look real on screen. */
+export function txnRef(): string {
+  const group = () => Math.random().toString(36).slice(2, 6).toUpperCase().padEnd(4, "0");
+  return `SNT-${group()}-${group()}`;
+}
+
+/** Every transaction (real and decoy) carries a receipt reference. */
+function ensureRefs(data: DB) {
+  for (const u of Object.values(data.users)) {
+    for (const t of u.transactions) t.ref ??= txnRef();
+    for (const t of u.decoyTxns ?? []) t.ref ??= txnRef();
+  }
+}
+
 function seed(): DB {
-  return {
+  const data: DB = {
     users: { ada: ada(), bola: bola() },
     ledger: [],
     decisions: [],
@@ -77,6 +91,8 @@ function seed(): DB {
     model: seedModel(),
     aiPrefs: {},
   };
+  ensureRefs(data);
+  return data;
 }
 
 // Persist across Next dev hot-reloads via globalThis.
@@ -98,6 +114,7 @@ function adopt(data: DB) {
   db.model = data.model ?? seedModel();
   db.aiPrefs = data.aiPrefs ?? {};
   for (const t of Object.values(db.toggles)) t.networkFeed ??= true;
+  ensureRefs(db);
 }
 
 export function resetDB() {
@@ -210,7 +227,7 @@ export function createUser(input: { name: string; phone: string; pin: string; du
     safeMode: false,
     baseline: { typicalMax: 40000, usualHours: [6, 23], knownPayees: [] },
     transactions: [
-      { id: uid("t"), dir: "in", name: "Welcome to Sentinel", amount: 150000, ts: now, note: "Demo starting balance" },
+      { id: uid("t"), dir: "in", name: "Welcome to Sentinel", amount: 150000, ts: now, note: "Demo starting balance", ref: txnRef() },
     ],
   };
   db.users[user.id] = user;
@@ -238,16 +255,17 @@ export function activateSafeMode(user: User) {
   ];
   const wage = drained.reduce((s, d) => s + d.amount, 0) + user.decoyBalance + 700;
   user.decoyTxns = [
-    { id: uid("dt"), dir: "out", name: drained[0].name, amount: drained[0].amount, ts: now - 7 * HOUR },
-    { id: uid("dt"), dir: "out", name: drained[1].name, amount: drained[1].amount, ts: now - 26 * HOUR },
-    { id: uid("dt"), dir: "out", name: drained[2].name, amount: drained[2].amount, ts: now - 2.2 * DAY },
-    { id: uid("dt"), dir: "out", name: "MTN airtime", amount: 700, ts: now - 3 * DAY },
-    { id: uid("dt"), dir: "in", name: "Salary", amount: wage, ts: now - 5 * DAY },
+    { id: uid("dt"), dir: "out", name: drained[0].name, amount: drained[0].amount, ts: now - 7 * HOUR, ref: txnRef() },
+    { id: uid("dt"), dir: "out", name: drained[1].name, amount: drained[1].amount, ts: now - 26 * HOUR, ref: txnRef() },
+    { id: uid("dt"), dir: "out", name: drained[2].name, amount: drained[2].amount, ts: now - 2.2 * DAY, ref: txnRef() },
+    { id: uid("dt"), dir: "out", name: "MTN airtime", amount: 700, ts: now - 3 * DAY, ref: txnRef() },
+    { id: uid("dt"), dir: "in", name: "Salary", amount: wage, ts: now - 5 * DAY, ref: txnRef() },
   ];
 }
 
 /** Fake transactions while coerced live only in the decoy history. */
 export function recordTxn(user: User, txn: Txn) {
+  txn.ref ??= txnRef();
   if (user.safeMode) {
     user.decoyBalance = Math.max(0, user.decoyBalance - (txn.dir === "out" ? txn.amount : -txn.amount));
     user.decoyTxns.unshift(txn);

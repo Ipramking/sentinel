@@ -67,6 +67,7 @@ export const api = {
   setAiEngine: (userId: string, aiEngine: string) => req("/api/engine", { userId, aiEngine }),
   report: (userId: string, account: string, name: string, txnId?: string, message?: string) =>
     req("/api/report", { userId, account, name, txnId, message }),
+  verifyRef: (ref: string) => req("/api/verify", { ref }),
   ledger: () => req("/api/ledger"),
   reset: () => req("/api/reset", {}),
 };
