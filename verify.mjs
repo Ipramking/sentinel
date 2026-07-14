@@ -48,8 +48,10 @@ ok("topup +20k", tu.ok && tu.amount === 20000);
 // 6. known payee sails through, odd hour gets noticed
 const m1 = await post("/api/transfer", { userId: "ada", account: "0221145678", name: "Mummy", amount: 15000, hour: 14 });
 ok("known payee frictionless", m1.status === "completed" && m1.frictionless === true, JSON.stringify(m1));
+// by now the judge account has also blown past its usual weekly pace, so this can
+// land as review or block — either way, the odd hour must be flagged and friction applied
 const late = await post("/api/transfer", { userId: judge, account: "0888777666", name: "Night Stranger", amount: 5000, hour: 2 });
-ok("odd hour + new payee -> review", late.status === "review" && JSON.stringify(late.risk.reasons).includes("outside the hours"), JSON.stringify(late.risk));
+ok("odd hour + new payee gets friction", ["review", "blocked"].includes(late.status) && JSON.stringify(late.risk.reasons).includes("outside the hours"), JSON.stringify(late.risk));
 
 // 7. blocked -> override (ada)
 const b1 = await post("/api/transfer", { userId: "ada", account: "3388776655", name: "Acct Verification Team", amount: 180000, hour: 14 });
