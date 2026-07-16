@@ -34,3 +34,12 @@ npm run dev        # http://localhost:3000
 
 Demo PINs, every endpoint, and `curl` examples: [docs/API.md](docs/API.md).
 Security posture and trade-offs: [docs/SECURITY.md](docs/SECURITY.md).
+
+
+## Credits
+
+Team Sentinel — HackX 2026 (Union Bank × ECX)
+
+- Ipram (@Ipramking) — Engineering & Product
+- Anu (@Anades001) — Pitch Deck, Demo Script & Video
+- Tobi (@0xSkyLax) — Scam Corpus & Model Training Data
