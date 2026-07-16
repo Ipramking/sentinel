@@ -5,7 +5,7 @@
 An AI fraud immune system for banking, built for HackX 2026 (Union Bank × ECX) by
 Inioluwa, Anuoluwa and Craig.
 
-The idea in one line: your bank app should know how you behave. When a transfer looks
+The idea: Your bank app should know how you behave. When a transfer looks
 like you — someone you've paid before, a normal amount, a normal time — it goes straight
 through with no extra friction. When something is off, Sentinel steps in, explains itself
 in plain language, and acts. And every customer it protects makes the whole network
