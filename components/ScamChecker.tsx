@@ -20,6 +20,19 @@ type Verdict = {
 
 const VERDICT_TONE: Record<Verdict["verdict"], Tone> = { scam: "danger", suspicious: "warn", safe: "ok" };
 
+// Icon-over-label so each input button owns an equal third and never overflows on phones.
+const INPUT_BTN: React.CSSProperties = {
+  flexDirection: "column",
+  gap: 5,
+  minWidth: 0,
+  minHeight: 60,
+  padding: "9px 6px",
+  fontSize: "0.75rem",
+  lineHeight: 1.15,
+  fontWeight: 600,
+  textAlign: "center",
+};
+
 const SOURCE_LABEL: Record<Verdict["source"], string> = {
   gemini: "Read by Gemini AI",
   core: "Read by Sentinel Core, our own model",
@@ -127,15 +140,15 @@ export function ScamChecker({ compact = false }: { compact?: boolean }) {
           onChange={(e) => setText(e.target.value)}
           placeholder='e.g. "Your account has been blocked, transfer ₦… to reactivate"'
         />
-        <div className="flex gap-2 mt-2.5">
-          <button className="btn btn-ghost flex-1 text-[0.8125rem]" style={compact ? { minHeight: 42, padding: "8px 8px" } : undefined} onClick={() => fileRef.current?.click()}>
-            <Icon name="image" size={17} /> Screenshot
+        <div className="grid grid-cols-3 gap-2 mt-2.5">
+          <button className="btn btn-ghost" style={INPUT_BTN} onClick={() => fileRef.current?.click()}>
+            <Icon name="image" size={18} /> Screenshot
           </button>
-          <button className="btn btn-ghost flex-1 text-[0.8125rem]" style={compact ? { minHeight: 42, padding: "8px 8px" } : undefined} onClick={() => audioRef.current?.click()}>
-            <Icon name="mic" size={16} /> Voice note
+          <button className="btn btn-ghost" style={INPUT_BTN} onClick={() => audioRef.current?.click()}>
+            <Icon name="mic" size={18} /> Voice note
           </button>
-          <button className="btn btn-ghost flex-1 text-[0.8125rem]" style={compact ? { minHeight: 42, padding: "8px 8px" } : undefined} onClick={() => setText(SAMPLE)}>
-            <Icon name="doc" size={16} /> Sample
+          <button className="btn btn-ghost" style={INPUT_BTN} onClick={() => setText(SAMPLE)}>
+            <Icon name="doc" size={18} /> Sample
           </button>
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
           <input ref={audioRef} type="file" accept="audio/*" hidden onChange={onAudio} />
