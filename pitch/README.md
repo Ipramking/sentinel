@@ -12,8 +12,17 @@ stakes; everything after lands the point. Don't rush to it — the contrast is t
 
 ## 0:00 — Hook (on the sign-in screen)
 
-> "Every fraud app asks one question: *is this transaction risky?* Sentinel asks a second
-> one that nobody else does: *is this person being forced?* Let me show you both."
+> "Even after fraud fell by half last year, Nigerians and their banks still lost ₦25.85 billion
+> to digital payment fraud in 2025. Every fraud app asks one question: *is this transaction
+> risky?* Sentinel asks a second one that nobody else does: *is this person being forced?*
+> Let me show you both."
+
+**The numbers (for the deck / Q&A):**
+- ₦25.85bn lost to digital payment fraud in Nigeria, 2025 — down 51% from ₦52.26bn in 2024.
+- The fall was driven by better regulation and industry collaboration (banks sharing threat data).
+- **Our angle:** Sentinel *is* that collaboration, built for the customer — herd immunity where one
+  report protects everyone. And coercion / social-engineering is the gap collaboration alone can't
+  close. *(Cite your source for the figures on the slide.)*
 
 ## 0:20 — A normal, protected transfer
 

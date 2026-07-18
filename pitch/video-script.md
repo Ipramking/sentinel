@@ -9,7 +9,9 @@ Login PINs — Ada: normal `1234`, panic `9111` · Bola: normal `4321`.
 ---
 
 ## 0:00 — Cold open *(sign-in screen)*
-**SAY:** "Every fraud app asks the same question — *is this transaction risky?* Sentinel asks a
+**SAY:** "Last year Nigerians and their banks still lost twenty-five point eight billion naira to
+digital payment fraud — even after it fell by half, because the industry finally started sharing
+threat data. Every fraud app asks the same question — *is this transaction risky?* Sentinel asks a
 second one that nobody else does: *is this person being forced?* Let me show you both."
 
 ## 0:18 — Normal transfer
