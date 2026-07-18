@@ -26,6 +26,20 @@ const SCAM_SEED = [
   "Sweetheart I want to send you a gift through a diplomat the agent needs a delivery charge paid to this account today",
   "Your electricity will be disconnected tonight pay your outstanding bill now to this personal account to avoid it",
   "Investment opportunity double your money in 48 hours guaranteed pay in now limited slots remaining",
+  "Your BVN has been used for fraud to avoid arrest confirm your account number and PIN with this security line now",
+  "Good day this is from your bank we are upgrading to a new app enter your card details on this link to migrate",
+  "Congratulations your line was selected in the Airtel anniversary draw pay the delivery fee to receive your cash prize",
+  "Hello dear I am a widow with cancer I want to donate my wealth to you kindly send your bank details to receive the funds",
+  "Your DSTV subscription has an outstanding balance pay now via transfer to this account to avoid disconnection today",
+  "This is FIRS your tax refund of 340,000 is approved pay the processing levy to release the money to your account",
+  "Job offer confirmed at the oil company pay for your medical and visa processing to this account to secure your role",
+  "Your account will be debited 29,999 for a subscription you did not authorise reply with your OTP to cancel it now",
+  "Nigerian army recruitment portal is open pay the form fee to this personal account before slots close tonight",
+  "Loan approved instantly no collateral pay a small insurance fee first and your 500,000 will be disbursed today",
+  "Your POS agent code has been suspended send your card number and PIN to reactivate and keep receiving commissions",
+  "I sent you the money already check your account the network is slow just send the goods I will resend if it fails",
+  "Emergency your son was involved in an accident send money now for the surgery do not delay call this doctor only",
+  "You have received a payment of 250,000 click this link and log in with your bank details to accept the credit",
 ];
 
 const HAM_SEED = [
@@ -41,6 +55,16 @@ const HAM_SEED = [
   "The mechanic said the car will be ready tomorrow the fault was the alternator",
   "Can you resend the invoice the first attachment did not open on my system",
   "Happy birthday brother wishing you long life and prosperity enjoy your day",
+  "Your transfer of 5,000 to John was successful your available balance is now 42,300",
+  "You have received 20,000 from Ada Okoro your new balance is 62,300",
+  "Please confirm you got the documents I emailed I need your feedback before Friday",
+  "The kids resume school on Monday remember to buy the new textbooks this weekend",
+  "I have reached home safely traffic was light today let's talk tomorrow",
+  "Team lunch is on Friday at the usual place around 1pm hope you can make it",
+  "Your Jumia order has shipped and will be delivered to your address on Wednesday",
+  "Please send your account number so I can refund your half of the group gift",
+  "The generator needs servicing I have called the technician for Saturday morning",
+  "Well done on the presentation today the client was really impressed with your part",
 ];
 
 function tokenize(text: string): string[] {
