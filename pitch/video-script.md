@@ -1,69 +1,46 @@
-# Sentinel — Demo Video Script (shoot this)
+# Sentinel — Demo Video Cue Sheet (easy live take)
 
-**Target ≤ 3 minutes.** Screen-record the live app: https://sentinel-ifrenzys-projects.vercel.app
-`[DO]` = what you click · **"SAY"** = read aloud, word for word.
+**How to use this:** These are *cues, not a script.* Talk in your own words — glance at the
+bullet, say the idea, move on. Don't memorise. Only the ★ line is worth saying close to
+as written. Aim for a relaxed ~3:00–3:30. If you fumble, keep going — I trim it in post.
 
-**Before you record:** app open at the sign-in screen, demo data reset, phone-shaped window.
-Login PINs — Ada: normal `1234`, panic `9111` · Bola: normal `4321`.
-
----
-
-## 0:00 — Cold open *(sign-in screen)*
-**SAY:** "Last year Nigerians and their banks still lost twenty-five point eight billion naira to
-digital payment fraud — even after it fell by half, because the industry finally started sharing
-threat data. Every fraud app asks the same question — *is this transaction risky?* Sentinel asks a
-second one that nobody else does: *is this person being forced?* Let me show you both."
-
-## 0:18 — Normal transfer
-`[DO]` Sign in as **Ada** with `1234`. Send to a **new payee**; enter an amount.
-**SAY:** "Here's a normal transfer. The moment I add a new payee, Sentinel's risk score climbs
-— new recipient, unusual amount — and it pauses to check before any money moves."
-
-`[DO]` Confirm the transfer to **Bola**. Show the receipt and the changed balance.
-**SAY:** "I approve it, and the money actually moves — real balance, real receipt, between two
-real accounts. This isn't a mockup. It's a working bank."
-
-## 0:50 — ScamGuard
-`[DO]` Open **ScamGuard**. Paste a scam text (or upload a screenshot / voice note). Show the verdict.
-**SAY:** "This is ScamGuard. I drop in a suspicious message — text, screenshot, even a voice note
-— and Sentinel flags it instantly, running on-device with an engine we call Sentinel Core. And it
-learns: one person's report protects everyone on the network. That's herd immunity."
-
-## 1:30 — The duress climax *(slow down — this is the moment)*
-**SAY:** "Now the part no other fraud tool does. Imagine I've been forced to log in — someone is
-standing over me, demanding money."
-
-`[DO]` Sign in as **Ada** again — with the **panic PIN `9111`**. Let the home screen sit for
-**3 full seconds**. Say nothing.
-**SAY:** *(after the pause)* "Notice — the app opened completely normally. A balance, a home
-screen. Nothing looks wrong. That's the point."
-
-`[DO]` Do a transfer under duress; show it "succeed" with a receipt.
-**SAY:** "I send the money. It succeeds. The person forcing me is satisfied — but watch what
-really happened."
-
-`[DO]` Point to the **FAKE** watermark on the receipt, then open **`/verify`** and search that
-reference → "no record."
-**SAY:** "That receipt is watermarked *fake*. The public verify page has no record of it. No real
-money ever left my account — and the instant I entered that PIN, a silent alarm went out to my
-trusted contact. The attacker never had a clue."
-
-## 2:30 — Close *(tagline card or sign-in screen)*
-**SAY:** "Fraud scoring, an on-device model that learns, real transfers — and a duress layer that
-protects you when the danger is a person in the room. That's Sentinel. *Security that disappears
-when you're you.*"
-
-**[END — fade]**
+**Setup:** app reset, signed out, at the sign-in screen. PINs — Ada `1234` / panic `9111`,
+Bola `4321`. Second screen or paper with this sheet, not on the recording.
 
 ---
 
-## Three things that make or break the video
-- **The 3-second silence** on the duress home screen is the most important moment — don't fill it.
-  The stillness *is* the pitch.
-- **Never let the words "safe mode" or "duress" appear on screen.** The reveal lives in the
-  narration only.
-- If a line runs long while recording, cut words — never the duress beat. That's the scene judges
-  remember.
+### 1 · Open  *(sign-in screen)*  ~15s
+**Do:** nothing yet, just be on the sign-in screen.
+**Say (your words):**
+- Fraud's falling, but Nigerians still lost ₦25 billion last year.
+- Every fraud app asks *"is this risky?"* — Sentinel also asks *"is this person being forced?"*
 
-## Delivery
-Export MP4 → upload to Drive or unlisted YouTube → paste the link into GitHub issue #3 and close it.
+### 2 · A real transfer  ~30s
+**Do:** sign in as Ada (`1234`) → send to a **new payee** → point at the risk score → complete to Bola → show the receipt.
+**Say:**
+- New payee, unusual amount → the risk score reacts before money moves.
+- And the money *actually* moves — real balance, real receipt. Not a mockup.
+
+### 3 · ScamGuard  ~25s
+**Do:** open ScamGuard → paste a scam text (or a screenshot) → show the verdict.
+**Say:**
+- Drop in any suspicious message — it flags the scam instantly, on-device.
+- One person reports it, everyone's protected. That's herd immunity.
+
+### 4 · ★ The duress moment  *(the one that matters — slow down)*  ~40s
+**Do:** sign in as Ada again with the **panic PIN `9111`** → **pause ~3 seconds, say nothing** → do a transfer → show the **FAKE** receipt → open `/verify` → "no record."
+**Say (nail this one):**
+> "The app looks completely normal — but the second I entered that PIN, a silent alarm
+> fired, the receipt is fake, and no real money moved. The attacker never knew."
+
+### 5 · Close  ~10s
+**Say:**
+- Real transfers, an AI that learns, and protection even when you're forced.
+- ★ *"Security that disappears when you're you."*
+
+---
+
+**Three rules that keep it short & clean:**
+1. Talk in your own words — cues, not a script. Way faster than reading.
+2. The only must-hit beats: the **3-second silence** and the **duress reveal**. Everything else is flexible.
+3. Don't restart for small stumbles — keep rolling, I cut the rough bits.
