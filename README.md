@@ -8,6 +8,10 @@ Inioluwa, Anuoluwa and Craig.
 **▶ Live demo:** https://sentinel-ifrenzys-projects.vercel.app
 Sign in as **Ada** (PIN `1234`) or **Bola** (PIN `4321`) — or open your own account in ~20 seconds.
 
+> **Judges — try the duress feature:** sign in with a **panic PIN** (Ada `9111`, Bola `9222`).
+> The app opens a believable decoy account while your real money locks and a silent alarm
+> fires — and nothing on screen ever reveals it. That's the part no other fraud tool has.
+
 The idea: Your bank app should know how you behave. When a transfer looks
 like you — someone you've paid before, a normal amount, a normal time — it goes straight
 through with no extra friction. When something is off, Sentinel steps in, explains itself
