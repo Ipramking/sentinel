@@ -43,8 +43,11 @@ but never blocks a sign-in by itself.
 ```
 
 The duress PIN answers with the **same shape** (`"mode": "duress"`) and flips the
-account into safe mode: decoy balance, decoy history, silent alarm to the fraud desk
-and trusted contact. Nothing the phone renders afterwards betrays it.
+account into safe mode. Safe mode randomly picks one of two disguises (`duressView`):
+a **decoy account** (₦0–500 balance with a plausible drained history) or a
+**"connection lost"** screen — both deliberate, so a network-error screen here is the
+feature working, not a bug. Either way a silent alarm goes to the fraud desk and trusted
+contact, and nothing the phone renders afterwards betrays it.
 
 ### GET /api/state?userId=ada
 

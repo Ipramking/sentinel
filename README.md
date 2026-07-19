@@ -9,8 +9,10 @@ Inioluwa, Anuoluwa and Craig.
 Sign in as **Ada** (PIN `1234`) or **Bola** (PIN `4321`) — or open your own account in ~20 seconds.
 
 > **Judges — try the duress feature:** sign in with a **panic PIN** (Ada `9111`, Bola `9222`).
-> The app opens a believable decoy account while your real money locks and a silent alarm
-> fires — and nothing on screen ever reveals it. That's the part no other fraud tool has.
+> Safe mode randomly shows one of two believable disguises — a **decoy account** (near-empty
+> balance) or a **"connection lost" screen** — while your real money locks and a silent alarm
+> fires. Both are intentional: a network-error screen here is the feature working, *not* a crash.
+> Nothing on screen ever reveals safe mode. That's the part no other fraud tool has.
 
 The idea: Your bank app should know how you behave. When a transfer looks
 like you — someone you've paid before, a normal amount, a normal time — it goes straight
