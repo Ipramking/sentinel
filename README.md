@@ -5,13 +5,21 @@
 An AI fraud immune system for banking, built for HackX 2026 (Union Bank × ECX) by
 Inioluwa, Anuoluwa and Craig.
 
+**▶ Live demo:** https://sentinel-ifrenzys-projects.vercel.app
+Sign in as **Ada** (PIN `1234`) or **Bola** (PIN `4321`) — or open your own account in ~20 seconds.
+
 The idea: Your bank app should know how you behave. When a transfer looks
 like you — someone you've paid before, a normal amount, a normal time — it goes straight
 through with no extra friction. When something is off, Sentinel steps in, explains itself
 in plain language, and acts. And every customer it protects makes the whole network
 safer, because one person's scam report blocks that account for everyone.
 
-## What we're building this week
+Even after fraud fell 51% in 2025, Nigerians and their banks still lost ₦25.85bn to
+digital payment fraud. The drop came from collaboration — Sentinel is that collaboration,
+built for the customer, and it closes the gap collaboration leaves: coercion and social
+engineering.
+
+## What it does
 
 - **Adaptive, risk-based authentication** — behavioural scoring routes each transfer to
   low-friction, step-up, or blocked. Never switches authentication off; it drops the
@@ -24,6 +32,11 @@ safer, because one person's scam report blocks that account for everyone.
 - **Duress PIN** — a second PIN that shows a believable decoy account while your real
   money locks and a silent alert goes out.
 - **Trust Center** — every decision explained, with data-source controls you own.
+
+## Tech stack
+
+Next.js (App Router) · TypeScript · MongoDB · Google Gemini 2.5 Flash (text/screenshot/voice)
+· Sentinel Core, our own naive-Bayes classifier · deployed on Vercel · 80+ end-to-end checks.
 
 ## Run it
 
